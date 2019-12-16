@@ -138,8 +138,6 @@ class ChessState():
 
         return pretty_str
 
-    def
-
 
 def fen_to_state(fen_str):
     [files, color, castling, ep, half_moves, moves] = fen_str.split(" ")
@@ -182,7 +180,7 @@ def score_state(chess_state, search_state):
     return chess_state.material_balance
 
 def next_states(chess_state, search_state):
-
-    while num < n:
-        yield num
-        num += 1
+    return True
+    # while num < n:
+    #     yield num
+    #     num += 1
