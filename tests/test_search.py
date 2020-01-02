@@ -1,4 +1,4 @@
-from search import GameSearch
+from src.search import GameSearch
 
 
 class Node():
@@ -14,24 +14,24 @@ def all_valid_moves(g):
 
 
 game_tree =\
-    Node(None, True, [ #7
-        Node(1, False, [ # 7
-            Node(None, True, [ # 7
-                Node(None, False, [# 7
+    Node(None, True, [  # 7
+        Node(1, False, [  # 7
+            Node(None, True, [  # 7
+                Node(None, False, [  # 7
                     Node(8, True, [], True),
                     Node(7, True, [], True)
                 ]),
-                Node(None, False, [ # 3
+                Node(None, False, [  # 3
                     Node(3, True, [], True),
                     Node(9, True, [], True)
                 ])
             ]),
-            Node(None, True, [ # 8
-                Node(None, False, [ # 8
+            Node(None, True, [  # 8
+                Node(None, False, [  # 8
                     Node(9, True, [], True),
                     Node(8, True, [], True)
                 ]),
-                Node(None, False, [ # 2
+                Node(None, False, [  # 2
                     Node(2, True, [], True),
                     Node(4, True, [], True)
                 ])

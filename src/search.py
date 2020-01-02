@@ -1,4 +1,4 @@
-from primitive import set_
+from src.primitive import set_
 
 lb = float("-inf")
 ub = float("inf")
@@ -76,21 +76,21 @@ class GameSearch():
             game_state,
             search_state,
             scan_depth=5,
-            max_prior_best=[lb, None],
-            min_prior_best=[ub, None]):
+            max_prior_best=(lb, None),
+            min_prior_best=(ub, None)):
 
         g_d = search_state["g_depth"] + search_state["s_depth"] - scan_depth
 
         if scan_depth == 0 or game_state.is_done:
-            return [self.score_state(game_state, search_state), None]
+            return (self.score_state(game_state, search_state), None)
         else:
             if game_state.is_maxer:
-                max_best = [lb, None]
+                max_best = (lb, None)
 
                 for new_state in self.next_states(game_state, search_state):
                     alpha_meta = max_best if max_best[0] > max_prior_best[0] else max_prior_best
 
-                    [next_score, pos] = self.alpha_beta_max(
+                    (next_score, pos) = self.alpha_beta_max(
                         new_state,
                         search_state,
                         scan_depth - 1,
@@ -98,7 +98,7 @@ class GameSearch():
                         min_prior_best
                     )
                     if next_score > max_best[0]:
-                        max_best = [next_score, new_state]
+                        max_best = (next_score, new_state)
 
                     if min_prior_best <= max_best:
                         # Avoiding searching (pruning) the rest of the moves and their descendents
@@ -109,12 +109,12 @@ class GameSearch():
                         return max_best
                 return max_best
             else:
-                min_best = [ub, None]
+                min_best = (ub, None)
 
                 for new_state in self.next_states(game_state, search_state):
                     beta_meta = min_best if min_best[0] < min_prior_best[0] else min_prior_best
 
-                    [next_score, pos] = self.alpha_beta_max(
+                    (next_score, pos) = self.alpha_beta_max(
                         new_state,
                         search_state,
                         scan_depth - 1,
@@ -122,7 +122,7 @@ class GameSearch():
                         beta_meta
                     )
                     if next_score < min_best[0]:
-                        min_best = [next_score, new_state]
+                        min_best = (next_score, new_state)
 
                     if max_prior_best >= min_best:
                         set_(search_state, "killers." + str(g_d) + ".maxer", max_prior_best)

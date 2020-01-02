@@ -1,4 +1,5 @@
-from chess import ChessState, initial_fen, initial_state, fen_to_state
+from src.chess.chess_consts import initial_fen
+from src.chess.chess_state import fen_to_state
 
 
 def test_fen_to_state():
@@ -20,6 +21,7 @@ def test_fen_to_state():
     assert state.halfmoves == 0
     assert state.move == 1
     assert state.material_balance == 0
+
 
 def test_to_fen():
     state = fen_to_state(initial_fen)
