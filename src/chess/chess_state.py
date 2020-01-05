@@ -3,23 +3,33 @@ from collections import namedtuple
 from src.chess.chess_movement import is_attacked
 
 from src.chess.chess_consts import b_range, white, black, castling_rooks, material, kings, pieces,\
-    initial_fen
+    initial_fen, ranks, files
 
 
 Undo = namedtuple("Undo", [
-    "done",
-    "from_",
-    "to_",
-    "victim",
-    "en_passant_target",
-    "castling_available",
-    "castled_to"
-], defaults=(None, None, None, None, None, None))
+    "undo_balance",
+    "undo_ca",
+    "undo_ept",
+    "undo_board",
+    "undo_check_state",
+    "redo_move"
+])
+
+
+def coords_to_chess(pos):
+    (y, x) = pos
+    return f"{files[x]}{ranks[y]}"
+
+
+def chess_to_coords(chess):
+    [f, r] = list(chess)
+    return (ranks.index(int(r)), files.index(f))
 
 
 class ChessState():
-    # all 2d coords are in (y, x) form where positive y is down, this is to ease working with 2d array
-    # board representation
+    # all 2d coords are in (y, x) form where positive y is down (from white's perspective),
+    # this is to ease working with 2d array board representation
+    # e.g. (0, 0) -> a8; (0, 7) -> h8; (7, 0) -> a1; (7,7) -> h1
     def __init__(
             self,
             is_done,  # If the game is in a complete state or not
@@ -31,8 +41,7 @@ class ChessState():
             board,
             material_balance,
             king_pos,
-            check_state,
-            undo_stack):
+            check_state):
 
         self.is_done = is_done
         self.active_color = active_color
@@ -42,9 +51,8 @@ class ChessState():
         self.move = move
         self.board = board
         self.material_balance = material_balance
-        self.king_pos = king_pos,
-        self.check_state = check_state,
-        self.undo_stack = undo_stack
+        self.king_pos = king_pos
+        self.check_state = check_state
         # self.mobility = mobility
 
     def to_fen(self):
@@ -73,8 +81,8 @@ class ChessState():
         return " ".join([
             "/".join(files),
             self.active_color,
-            self.castling_available,
-            self.en_passant_target,
+            self.castling_available if self.castling_available is not None else "-",
+            coords_to_chess(self.en_passant_target) if self.en_passant_target is not None else "-",
             str(self.halfmoves),
             str(self.move)
         ])
@@ -82,74 +90,64 @@ class ChessState():
     def is_maxer(self):
         return self.active_color == white
 
-    # self.is_done = is_done
-    # self.active_color = active_color
-    # self.castling_available = castling_available
-    # self.en_passant_target = en_passant_target
-    # self.halfmoves = halfmoves
-    # self.move = move
-    # self.board = board
-    # self.material_balance = material_balance
-    # self.undo_stack = undo_stack
-
-    # Move = namedtuple("Move", [
-    #     "from_",
-    #     "to_",
-    #     "victim",
-    #     "en_passant_target",
-    #     "castling_available_to",
-    #     "castled_to"
-    # ], defaults=(None, None, None, None, None, None))
-
     def board_apply(self, move):
         (f_y, f_x) = move.from_
         (t_y, t_x) = move.to_
         piece = self.board[f_y][f_x]
 
-        self.king_pos[piece] = move.to_
+        undos = [
+            (move.from_, piece),
+            (move.to_, move.victim)
+        ]
 
-        undo = (
-            (piece, move.from_),
-            (move.victim, move.to)
-        )
         self.board[t_y][t_x] = piece
         self.board[f_y][f_x] = None
 
-        undo_c_rook = None
+        if move.ept_cap is not None:
+            ((y, x), piece) = move.ept_cap
+            self.board[y][x] = None
+            undos.append(move.ept_cap)
 
-        if move.castled_to is not None:
-            c_from = castling_rooks[move.castled_to]
+        if piece in kings:
+            self.king_pos[piece] = move.to_
+
+        if move.castle is not None:
+            # Have to move the rook too
+            c_from = castling_rooks[move.castle]
             c_to = None
 
-            if move.castled_to == "K":
+            if move.castle == "K":
                 c_to = (7, 5)
-            elif move.castled_to == "Q":
+            elif move.castle == "Q":
                 c_to = (7, 3)
-            elif move.castled_to == "k":
+            elif move.castle == "k":
                 c_to = (0, 5)
             else:
                 c_to = (0, 3)
 
             c_piece = self.board[c_from[0]][c_from[1]]
-            self.king_pos[c_piece] = c_to
 
-            undo_c_rook = (
-                (c_piece, c_from),
-                (None, c_to)
-            )
+            undos.append((c_from, c_piece))
+            undos.append((c_to, None))
+
             self.board[c_to[0]][c_to[1]] = c_piece
             self.board[c_from[0]][c_from[1]] = None
 
-        return (undo, undo_c_rook)
+        return undos
 
-    def board_undo(self, back):
-        for undos in back:
-            for (piece, pos) in undos:
-                self.board[pos[0]][pos[1]] = piece
+    def board_undo(self, undos):
+        for undo in undos:
+            (pos, piece) = undo
+            self.board[pos[0]][pos[1]] = piece
+
+            if piece in kings:
+                self.king_pos[piece] = pos
 
         return self
 
     def apply(self, move):
+        undo_balance = self.material_balance
+
         # TODO draw rules halfmove counter etc
         if move.victim is not None:
             self.material_balance -= material[move.victim]
@@ -157,24 +155,59 @@ class ChessState():
             if move.victim in kings:
                 self.done = True
 
-        if move.castling_available_to is not None:
-            self.castling_available = move.castling_available_to
+        if move.ept_cap is not None:
+            (pos, piece) = move.ept_cap
+            self.material_balance -= material[piece]
 
-        self.en_passant_target = move.en_passant_target
+        undo_ca = self.castling_available
 
+        if move.new_castling_available is not None:
+            self.castling_available = None if move.new_castling_available == "-" else move.new_castling_available
+
+        undo_ept = self.en_passant_target
+        self.en_passant_target = move.new_en_passant_target
         self.move += 1 if self.active_color == black else 0
+
+        undo_board = self.board_apply(move)
 
         # Color change affects subject in "is_attacked" etc
         self.active_color = black if self.active_color == white else white
 
+        undo_check_state = self.check_state
         king_piece = "K" if self.active_color == white else "k"
         self.check_state = is_attacked(self, self.king_pos[king_piece])
 
-        return self
+        return Undo(
+            undo_balance,
+            undo_ca,
+            undo_ept,
+            undo_board,
+            undo_check_state,
+            move
+        )
 
-    def undo(self, num):
-        # TODO
-        return self
+    def undo(self, undo):
+        (
+            undo_balance,
+            undo_ca,
+            undo_ept,
+            undo_board,
+            undo_check_state,
+            move
+        ) = undo
+
+        if undo_balance is not None:
+            self.material_balance = undo_balance
+        if undo_ca is not None:
+            self.castling_available = undo_ca
+        if undo_ept is not None:
+            self.en_passant_target = undo_ept
+
+        self.check_state = undo_check_state
+        self.board_undo(undo_board)
+        self.move -= 1 if self.active_color == white else 0
+        self.active_color = black if self.active_color == white else white
+        return move
 
 
 def calc_material_balance(board):
@@ -190,9 +223,9 @@ def calc_material_balance(board):
 
 
 def fen_to_state(fen_str):
-    [files, color, castling, ept, half_moves, moves] = fen_str.split(" ")
+    [files, color, ca, ept, half_moves, moves] = fen_str.split(" ")
     board = []
-    king_pos = dict()
+    king_pos = {}
     i = 0
 
     for file_str in files.split("/"):
@@ -211,19 +244,20 @@ def fen_to_state(fen_str):
         i += 1
 
     active_king = "K" if color == white else "k"
+    en_passant_target = chess_to_coords(ept) if ept != "-" else None
+    castling_available = ca if ca != "-" else None
 
     state = ChessState(
         is_done=False,
         active_color=color,
-        castling_available=castling,
-        en_passant_target=ept,
+        castling_available=castling_available,
+        en_passant_target=en_passant_target,
         halfmoves=int(half_moves),
         move=int(moves),
         board=board,
         material_balance=calc_material_balance(board),
         king_pos=king_pos,
-        check_state=None,
-        undo_stack=[]
+        check_state=False
     )
     state.check_state = is_attacked(state, king_pos[active_king])
 

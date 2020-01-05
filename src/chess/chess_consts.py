@@ -1,3 +1,5 @@
+import string
+
 initial_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 white = "w"
@@ -16,6 +18,10 @@ kings = set("kK")
 
 # bounds checking for coords
 b_range = set(range(0, 8))
+
+# for chess "alegbraic notation"
+ranks = list(range(8, 0, -1))
+files = list(string.ascii_lowercase)[:8]
 
 material = {
     "k": -10000,
