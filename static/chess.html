@@ -108,7 +108,7 @@
       sparePieces: true
     });
 
-    (function hackTheBoard() {
+    function enhanceTheBoard() {
       var styles = "position:absolute;font-size:14px;color:black;";
       var topStyles = styles + "top:0;right:2px;";
 
@@ -121,7 +121,8 @@
       ['8', '7', '6', '5', '4', '3', '2', '1'].map((n, i) => {
         $('.square-h' + n).css("positions", "relative").append("<div style=\"" + bottomStyles + "\">" + i + "</div>")
       });
-    })()
+    }
+    enhanceTheBoard();
 
     function reset() {
       stateList = ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'];
@@ -140,7 +141,10 @@
       newFen(board.fen());
     });
     $('#reset').on('click', reset);
-    $('#flip').on('click', () => board.flip());
+    $('#flip').on('click', () => {
+      board.flip();
+      enhanceTheBoard();
+    });
     $('#back').on('click', backFen);
     $('#forward').on('click', fwdFen);
 
