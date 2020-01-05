@@ -258,7 +258,7 @@ def get_moves(chess_state):
                             None,
                             None,
                             None,
-                            None, "-" if len(new_ca) == 0 else new_ca,
+                            "-" if len(new_ca) == 0 else new_ca,
                             k
                         )
 

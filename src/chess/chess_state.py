@@ -209,6 +209,10 @@ class ChessState():
         self.active_color = black if self.active_color == white else white
         return move
 
+    def pos(self, pos):
+        (y, x) = pos
+        return self.board[y][x]
+
 
 def calc_material_balance(board):
     balance = 0
