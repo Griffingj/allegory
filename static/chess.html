@@ -15,6 +15,7 @@
   <style>
     html, body {
       height: 100%;
+      font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
     }
 
     #board {
@@ -106,6 +107,21 @@
       onDrop,
       sparePieces: true
     });
+
+    (function hackTheBoard() {
+      var styles = "position:absolute;font-size:14px;color:black;";
+      var topStyles = styles + "top:0;right:2px;";
+
+      ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((l, i) => {
+        $('.square-' + l + '8').css("positions", "relative").append("<div style=\"" + topStyles + "\">" + i + "</div>")
+      });
+
+      var bottomStyles = styles + "bottom:2px;right:2px;";
+
+      ['8', '7', '6', '5', '4', '3', '2', '1'].map((n, i) => {
+        $('.square-h' + n).css("positions", "relative").append("<div style=\"" + bottomStyles + "\">" + i + "</div>")
+      });
+    })()
 
     function reset() {
       stateList = ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'];

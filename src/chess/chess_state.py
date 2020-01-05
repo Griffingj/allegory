@@ -259,7 +259,11 @@ def fen_to_state(fen_str):
         king_pos=king_pos,
         check_state=False
     )
-    state.check_state = is_attacked(state, king_pos[active_king])
+
+    if active_king in king_pos:
+        state.check_state = is_attacked(state, king_pos[active_king])
+    else:
+        raise Exception(f"Counldn't find active king.")
 
     return state
 

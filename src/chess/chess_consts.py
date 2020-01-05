@@ -19,7 +19,7 @@ kings = set("kK")
 # bounds checking for coords
 b_range = set(range(0, 8))
 
-# for chess "alegbraic notation"
+# for chess "algebraic notation"
 ranks = list(range(8, 0, -1))
 files = list(string.ascii_lowercase)[:8]
 

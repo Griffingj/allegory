@@ -139,7 +139,7 @@ def get_moves(chess_state):
     friendly_pieces = white_pieces if chess_state.active_color == white else black_pieces
     color_castling = white_castling if chess_state.active_color == white else black_castling
 
-    ca = chess_state.castling_available
+    ca = "" if chess_state.castling_available is None else intersect(chess_state.castling_available, color_castling)
     moves = []
 
     for i in b_range:
@@ -153,17 +153,18 @@ def get_moves(chess_state):
 
             if piece in pawns:
                 if chess_state.board[i + 1 * color_fwd][j] is None:
-                    move = Move(from_, (leap_file + 1 * color_fwd, j))
+                    short_to = (i + 1 * color_fwd, j)
+                    move = Move(from_, short_to)
 
-                    if not chess_state.is_check_locked(move):
+                    if not is_check_locked(chess_state, move):
                         moves.append(move)
 
                     # Pawn "leap" move
                     if chess_state.board[leap_file + 2 * color_fwd][j] is None and i == leap_file:
                         to = (leap_file + 2 * color_fwd, j)
-                        move = Move(from_, to, None, to)
+                        move = Move(from_, to, None, short_to)
 
-                        if not chess_state.is_check_locked(move):
+                        if not is_check_locked(chess_state, move):
                             moves.append(move)
 
                 # Attacks
@@ -176,16 +177,17 @@ def get_moves(chess_state):
                         victim = chess_state.board[i_tar][j_tar]
 
                         if to == chess_state.en_passant_target:
-                            ept_cap = (to, victim)
+                            ep_victim = chess_state.board[i_tar - color_fwd][j_tar]
+                            ept_cap = (to, ep_victim)
                             move = Move(from_, to, None, None, ept_cap)
 
-                            if not chess_state.is_check_locked(move):
+                            if not is_check_locked(chess_state, move):
                                 moves.append(move)
 
                         elif victim in enemy_pieces:
                             move = Move(from_, to, victim)
 
-                            if not chess_state.is_check_locked(move):
+                            if not is_check_locked(chess_state, move):
                                 moves.append(move)
 
             # Fixed offset assessment (knights, kings)
@@ -208,19 +210,18 @@ def get_moves(chess_state):
                                 victim,
                                 None,
                                 None,
-                                "-" if len(new_ca) == 0 else new_ca
+                                "-" if new_ca is not None and len(new_ca) == 0 else new_ca
                             )
 
-                            if not chess_state.is_check_locked(move):
+                            if not is_check_locked(chess_state, move):
                                 moves.append(move)
 
                         # elif friendly:
                         # TODO add guard logic here
 
                 # Castling for kings
-                cur_ca = intersect(ca, color_castling)
-                if piece in kings and len(cur_ca):
-                    for k in cur_ca:
+                if piece in kings and len(ca):
+                    for k in ca:
                         cont = False
 
                         # Can't castle if any of the positions between king and rook are occupied
@@ -261,7 +262,7 @@ def get_moves(chess_state):
                             k
                         )
 
-                        if not chess_state.is_check_locked(move):
+                        if not is_check_locked(chess_state, move):
                             moves.append(move)
 
             # Radiance style move assessment (Rooks, Bishops, Queens)
@@ -298,9 +299,13 @@ def get_moves(chess_state):
                                     "-" if new_ca is not None and len(new_ca) == 0 else new_ca
                                 )
 
-                                if not chess_state.is_check_locked(move):
+                                if not is_check_locked(chess_state, move):
                                     moves.append(move)
+
+                                if victim is not None:
+                                    break
 
                             elif friendly:
                                 break
                                 # TODO add guard logic here
+    return moves
