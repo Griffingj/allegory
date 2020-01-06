@@ -1,130 +1,256 @@
-from src.primitive import set_
+from copy import copy
 
-lb = float("-inf")
-ub = float("inf")
+from src.primitive import lowest, highest
+
+
+def minimax(game_state, next_actions, score_state, apply_action, search_depth, maxer=True):
+    if search_depth == 0 or game_state.is_done:
+        return score_state(game_state)
+    else:
+        scores = [lowest if maxer else highest]
+
+        for action in next_actions(game_state):
+            (new_state, undo) = apply_action(game_state, action)
+            next_score = minimax(
+                new_state,
+                next_actions,
+                score_state,
+                apply_action,
+                search_depth - 1,
+                not maxer
+            )
+            scores.append(next_score)
+
+        return max(scores) if maxer else min(scores)
+
+
+def alpha_beta_basic(
+        game_state,
+        next_actions,
+        score_state,
+        apply_action,
+        scan_depth,
+        max_prior_best=(lowest, None),
+        min_prior_best=(highest, None)):
+
+    if scan_depth == 0 or game_state.is_done:
+        return (score_state(game_state), None)
+    else:
+        if game_state.is_maxer:
+            max_best = (lowest, None)
+
+            for action in next_actions(game_state):
+                (new_state, undo) = apply_action(game_state, action)
+                alpha_meta = max_best if max_best[0] > max_prior_best[0] else max_prior_best
+
+                (next_score, pos) = alpha_beta_basic(
+                    new_state,
+                    next_actions,
+                    score_state,
+                    apply_action,
+                    scan_depth - 1,
+                    alpha_meta,
+                    min_prior_best
+                )
+                if next_score > max_best[0]:
+                    max_best = (next_score, action)
+
+                if min_prior_best[0] <= max_best[0]:
+                    # Avoiding searching (pruning) the rest of the moves and their descendents
+                    # because max_best is higher than miner's prior best option. Don't have to look
+                    # further if this is the case because on a prior move, miner will prefer
+                    # lower alternative
+                    return max_best
+            return max_best
+        else:
+            min_best = (highest, None)
+
+            for action in next_actions(game_state):
+                (new_state, undo) = apply_action(game_state, action)
+                beta_meta = min_best if min_best[0] < min_prior_best[0] else min_prior_best
+
+                (next_score, pos) = alpha_beta_basic(
+                    new_state,
+                    next_actions,
+                    score_state,
+                    apply_action,
+                    scan_depth - 1,
+                    max_prior_best,
+                    beta_meta
+                )
+                if next_score < min_best[0]:
+                    min_best = (next_score, action)
+
+                if max_prior_best[0] >= min_best[0]:
+                    return min_best
+            return min_best
 
 
 class GameSearch():
-    def __init__(self, score_state, next_states):
+    def __init__(self, score_state, next_actions, apply_action, undo_action, score_end, is_last_action):
         self.score_state = score_state
-        self.next_states = next_states
+        self.next_actions = next_actions
+        self.apply_action = apply_action
+        self.undo_action = undo_action
+        self.score_end = score_end
+        self.is_last_action = is_last_action
 
-    def minimax(self, state, search_depth=5, maxer=True):
-        if search_depth == 0 or state.is_done:
-            return self.score_state(state)
-        else:
-            scores = [lb if maxer else ub]
+    # def alpha_beta_enh2(
+    #         self,
+    #         game_state,
+    #         diag,
+    #         scan_depth,
+    #         max_prior_best=(lowest, None),
+    #         min_prior_best=(highest, None)):
 
-            for new_state in self.next_states(state):
-                next_score = self.minimax(
-                    new_state,
-                    search_depth - 1,
-                    not maxer
-                )
-                scores.append(next_score)
+    #     if scan_depth == 0:
+    #         diag.count("leaf")
+    #         return (self.score_state(game_state), None)
+    #     else:
+    #         if game_state.is_maxer:
+    #             max_best = (lowest, None)
+    #             actions = self.next_actions(game_state)
 
-            return max(scores) if maxer else min(scores)
+    #             if not actions:
+    #                 diag.count("noMoves")
+    #                 return (self.score_end(game_state), None)
 
-    def alpha_beta(
-            self,
-            state,
-            search_depth=5,
-            max_prior_best=lb,
-            min_prior_best=ub,
-            maxer=True):
+    #             for action in actions:
+    #                 if self.is_last_action(action):
+    #                     return (self.score_end(game_state), None)
 
-        if search_depth == 0 or state.is_done:
-            return self.score_state(state)
-        else:
-            if maxer:
-                max_best = lb
+    #                 (new_state, undo) = self.apply_action(game_state, action)
+    #                 alpha_meta = max_best if max_best[0] > max_prior_best[0] else max_prior_best
 
-                for new_state in self.next_states(state):
-                    next_score = self.alpha_beta(
-                        new_state,
-                        search_depth - 1,
-                        max(max_best, max_prior_best),
-                        min_prior_best,
-                        not maxer
-                    )
-                    max_best = max(max_best, next_score)
-                    if min_prior_best <= max_best:
-                        # Avoiding searching (pruning) the reset of the moves and their descendents
-                        # because max_best is higher than miner's prior best option. Don't have to look
-                        # further if this is the case because on a prior move, miner will prefer
-                        # lower alternative
-                        return max_best
-                return max_best
-            else:
-                min_best = ub
+    #                 (next_score, _) = self.alpha_beta_enh2(
+    #                     new_state,
+    #                     diag,
+    #                     scan_depth - 1,
+    #                     alpha_meta,
+    #                     min_prior_best
+    #                 )
+    #                 new_state.undo(undo)
 
-                for new_state in self.next_states(state):
-                    next_score = self.alpha_beta(
-                        new_state,
-                        search_depth - 1,
-                        max_prior_best,
-                        min(min_best, min_prior_best),
-                        not maxer
-                    )
-                    min_best = min(min_best, next_score)
-                    if max_prior_best >= min_best:
-                        return min_best
-                return min_best
+    #                 if next_score > max_best[0]:
+    #                     max_best = (next_score, action)
 
-    def alpha_beta_max(
+    #                 if min_prior_best[0] <= max_best[0]:
+    #                     diag.count("alphaPrune")
+    #                     break
+    #             return max_best
+    #         else:
+    #             min_best = (highest, None)
+    #             actions = self.next_actions(game_state)
+
+    #             if not actions:
+    #                 diag.count("noMoves")
+    #                 return (self.score_end(game_state), None)
+
+    #             for action in self.next_actions(game_state):
+    #                 if self.is_last_action(action):
+    #                     return (self.score_end(game_state), None)
+
+    #                 (new_state, undo) = self.apply_action(game_state, action)
+    #                 beta_meta = min_best if min_best[0] < min_prior_best[0] else min_prior_best
+
+    #                 (next_score, _) = self.alpha_beta_enh2(
+    #                     new_state,
+    #                     diag,
+    #                     scan_depth - 1,
+    #                     max_prior_best,
+    #                     beta_meta
+    #                 )
+    #                 new_state.undo(undo)
+
+    #                 if next_score < min_best[0]:
+    #                     min_best = (next_score, action)
+
+    #                 if max_prior_best[0] >= min_best[0]:
+    #                     diag.count("betaPrune")
+    #                     break
+
+    #             return min_best
+
+    def alpha_beta_enh(
             self,
             game_state,
-            search_state,
-            scan_depth=5,
-            max_prior_best=(lb, None),
-            min_prior_best=(ub, None)):
+            diag,
+            scan_depth,
+            max_prior_best=(lowest, None),
+            min_prior_best=(highest, None)):
 
-        g_d = search_state["g_depth"] + search_state["s_depth"] - scan_depth
-
-        if scan_depth == 0 or game_state.is_done:
-            return (self.score_state(game_state, search_state), None)
+        if scan_depth == 0:
+            diag.count("leaf")
+            return (self.score_state(game_state), None)
         else:
             if game_state.is_maxer:
-                max_best = (lb, None)
+                max_best = (lowest, None)
+                actions = self.next_actions(game_state)
 
-                for new_state in self.next_states(game_state, search_state):
+                if not actions:
+                    diag.count("noActions")
+                    return (self.score_end(game_state), None)
+
+                for action in actions:
+                    if self.is_last_action(action):
+                        diag.count("done")
+                        diag.info["donePaths"].append(copy(diag.history))
+                        return (self.score_end(game_state), None)
+
+                    (new_state, undo) = self.apply_action(game_state, action)
+                    diag.history.append(action)
                     alpha_meta = max_best if max_best[0] > max_prior_best[0] else max_prior_best
 
-                    (next_score, pos) = self.alpha_beta_max(
+                    (next_score, _) = self.alpha_beta_enh(
                         new_state,
-                        search_state,
+                        diag,
                         scan_depth - 1,
                         alpha_meta,
                         min_prior_best
                     )
-                    if next_score > max_best[0]:
-                        max_best = (next_score, new_state)
+                    new_state.undo(undo)
+                    diag.history.pop()
 
-                    if min_prior_best <= max_best:
-                        # Avoiding searching (pruning) the rest of the moves and their descendents
-                        # because max_best is higher than miner's prior best option. Don't have to look
-                        # further if this is the case because on a prior move, miner will prefer
-                        # lower alternative
-                        set_(search_state, "killers." + str(g_d) + ".miner", min_prior_best)
-                        return max_best
+                    if next_score > max_best[0]:
+                        max_best = (next_score, action)
+
+                    if min_prior_best[0] <= max_best[0]:
+                        diag.count("alphaPrune")
+                        break
                 return max_best
             else:
-                min_best = (ub, None)
+                min_best = (highest, None)
+                actions = self.next_actions(game_state)
 
-                for new_state in self.next_states(game_state, search_state):
+                if not actions:
+                    diag.count("noActions")
+                    return (self.score_end(game_state), None)
+
+                for action in self.next_actions(game_state):
+                    if self.is_last_action(action):
+                        diag.count("done")
+                        diag.info["donePaths"].append(copy(diag.history))
+                        return (self.score_end(game_state), None)
+
+                    (new_state, undo) = self.apply_action(game_state, action)
+                    diag.history.append(action)
                     beta_meta = min_best if min_best[0] < min_prior_best[0] else min_prior_best
 
-                    (next_score, pos) = self.alpha_beta_max(
+                    (next_score, _) = self.alpha_beta_enh(
                         new_state,
-                        search_state,
+                        diag,
                         scan_depth - 1,
                         max_prior_best,
                         beta_meta
                     )
-                    if next_score < min_best[0]:
-                        min_best = (next_score, new_state)
+                    new_state.undo(undo)
+                    diag.history.pop()
 
-                    if max_prior_best >= min_best:
-                        set_(search_state, "killers." + str(g_d) + ".maxer", max_prior_best)
-                        return min_best
+                    if next_score < min_best[0]:
+                        min_best = (next_score, action)
+
+                    if max_prior_best[0] >= min_best[0]:
+                        diag.count("betaPrune")
+                        break
+
                 return min_best

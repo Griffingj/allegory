@@ -40,14 +40,13 @@ four_ray_iter = [range(1, 8)] * 4
 # maximum number of spaces to check to cover all possible board offsets for queens
 eight_ray_iter = [range(1, 8)] * 8
 
+empty_set = set()
+
 Move = namedtuple("Move", [
     "from_",
     "to_",
     "victim",
-    # "attacking",  # TODO add this stuff back and use for calcs
-    # "defending",
-    # "attacked_by",
-    # "promotion",
+    # "promotion", # TODO ...
     "new_en_passant_target",
     "ept_cap",
     "new_castling_available",
@@ -55,7 +54,11 @@ Move = namedtuple("Move", [
 ], defaults=(None, None, None, None, None, None, None))
 
 
-def is_attacked(chess_state, pos):
+def is_attacked_by(chess_state, a, b):
+    return False
+
+
+def is_attacked(chess_state, pos, ignored=empty_set):
     (i, j) = pos
     friendly_pieces = white_pieces if chess_state.active_color == white else black_pieces
 
@@ -68,8 +71,9 @@ def is_attacked(chess_state, pos):
         for distance in ray:
             i_tar = i_dir * distance + i
             j_tar = j_dir * distance + j
+            to = (i_tar, j_tar)
 
-            if i_tar in b_range and j_tar in b_range:
+            if i_tar in b_range and j_tar in b_range and to not in ignored:
                 piece = chess_state.board[i_tar][j_tar]
 
                 if piece in friendly_pieces:
@@ -114,12 +118,23 @@ def is_attacked(chess_state, pos):
     return False
 
 
-def is_check_locked(chess_state, move):
+def _is_check_locked(chess_state, move):
     back = chess_state.board_apply(move)
     king_piece = "K" if chess_state.active_color == white else "k"
-    is_check = is_attacked(chess_state, chess_state.king_pos[king_piece])
+    king_pos, = chess_state.positions[king_piece]
+    is_check = is_attacked(chess_state, king_pos)
     chess_state.board_undo(back)
     return is_check
+
+
+def is_check_locked(chess_state, move):
+    # piece = chess_state.pos(move._from)
+
+    if chess_state.check_state:
+        return _is_check_locked(chess_state, move)
+    else:
+        # check king danger
+        return _is_check_locked(chess_state, move)
 
 
 def get_moves(chess_state):
@@ -202,25 +217,23 @@ def get_moves(chess_state):
                         victim = chess_state.board[i_tar][j_tar]
 
                         if victim not in friendly_pieces:
-                            # castle invalidation if king moves
-                            new_ca = subtract(ca, color_castling) if piece in kings else None
-                            move = Move(
-                                from_,
-                                (i_tar, j_tar),
-                                victim,
-                                None,
-                                None,
-                                "-" if new_ca is not None and len(new_ca) == 0 else new_ca
-                            )
+                            to = (i_tar, j_tar)
 
-                            if not is_check_locked(chess_state, move):
-                                moves.append(move)
+                            if piece in kings:
+                                # castle invalidation if king moves
+                                new_ca = subtract(ca, color_castling)
+                                ca_to = "-" if new_ca is not None and len(new_ca) == 0 else new_ca
+                                move = Move(from_, to, victim, None, None, ca_to)
 
-                        # elif friendly:
-                        # TODO add guard logic here
+                                if not is_attacked(chess_state, to, set([from_])):
+                                    moves.append(move)
+                            else:
+                                move = Move(from_, to, victim)
+                                if not is_check_locked(chess_state, move):
+                                    moves.append(move)
 
                 # Castling for kings
-                if piece in kings and len(ca):
+                if piece in kings and len(ca) and not chess_state.check_state:
                     for k in ca:
                         cont = False
 
@@ -234,7 +247,7 @@ def get_moves(chess_state):
 
                         # Can't castle if the king moves through a space that is attacked
                         for pos in castling_check[k]:
-                            if is_attacked(chess_state, pos):
+                            if is_attacked(chess_state, pos, set([from_])):
                                 cont = True
                                 break
                         if cont:
@@ -252,18 +265,9 @@ def get_moves(chess_state):
                         else:
                             to = (0, 2)
 
-                        move = Move(
-                            from_,
-                            to,
-                            None,
-                            None,
-                            None,
-                            "-" if len(new_ca) == 0 else new_ca,
-                            k
-                        )
-
-                        if not is_check_locked(chess_state, move):
-                            moves.append(move)
+                        ca_to = "-" if len(new_ca) == 0 else new_ca
+                        move = Move(from_, to, None, None, None, ca_to, k)
+                        moves.append(move)
 
             # Radiance style move assessment (Rooks, Bishops, Queens)
             elif piece in bishops or piece in rooks or piece in queens:
@@ -290,14 +294,8 @@ def get_moves(chess_state):
                                         if castling_rooks[k] == from_:
                                             new_ca = subtract(ca, k)
 
-                                move = Move(
-                                    from_,
-                                    (i_tar, j_tar),
-                                    victim,
-                                    None,
-                                    None,
-                                    "-" if new_ca is not None and len(new_ca) == 0 else new_ca
-                                )
+                                ca_to = "-" if new_ca is not None and len(new_ca) == 0 else new_ca
+                                move = Move(from_, (i_tar, j_tar), victim, None, None, ca_to)
 
                                 if not is_check_locked(chess_state, move):
                                     moves.append(move)
@@ -307,5 +305,4 @@ def get_moves(chess_state):
 
                             elif friendly:
                                 break
-                                # TODO add guard logic here
     return moves

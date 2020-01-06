@@ -130,10 +130,6 @@ def test_castling_in_check():
         Move(
             from_=(7, 4), to_=(7, 3), victim=None, new_en_passant_target=None, ept_cap=None,
             new_castling_available='-', castle=None
-        ),
-        Move(
-            from_=(7, 4), to_=(7, 6), victim=None, new_en_passant_target=None, ept_cap=None,
-            new_castling_available='-', castle='K'
         )
     ]
 

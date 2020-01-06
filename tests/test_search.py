@@ -1,4 +1,4 @@
-from src.search import GameSearch
+from src.search import minimax, alpha_beta_basic, GameSearch
 
 
 class Node():
@@ -15,7 +15,7 @@ def all_valid_moves(g):
 
 game_tree =\
     Node(None, True, [  # 7
-        Node(1, False, [  # 7
+        Node(None, False, [  # 7
             Node(None, True, [  # 7
                 Node(None, False, [  # 7
                     Node(8, True, [], True),
@@ -40,49 +40,39 @@ game_tree =\
     ])
 
 
+def next_actions(game_state):
+    count = len(game_state.children)
+    return range(0, count) if count > 0 else []
+
+
+def apply_action(game_state, action):
+    return (game_state.children[action], None)
+
+
+def score_end(game_state):
+    return game_state.static_score
+
+
 def test_minimax():
     score_call_vals = []
 
-    def score_state(g):
-        score_call_vals.append(g.static_score)
-        return g.static_score
+    def score_state(game_state):
+        score_call_vals.append(game_state.static_score)
+        return game_state.static_score
 
-    search = GameSearch(score_state, all_valid_moves)
-    search.minimax(game_tree)
-
+    minimax(game_tree, next_actions, score_state, apply_action, 5)
     assert score_call_vals == [8, 7, 3, 9, 9, 8, 2, 4]
 
 
-def test_alpha_beta():
+def test_alpha_beta_basic():
     score_call_vals = []
 
-    def score_state(g):
-        score_call_vals.append(g.static_score)
-        return g.static_score
+    def score_state(game_state):
+        score_call_vals.append(game_state.static_score)
+        return game_state.static_score
 
-    search = GameSearch(score_state, all_valid_moves)
-    search.alpha_beta(game_tree)
-
-    assert score_call_vals == [8, 7, 3, 9, 8]
-
-
-def test_alpha_beta_max():
-    score_call_vals = []
-
-    def score_state(g, s):
-        score_call_vals.append(g.static_score)
-        return g.static_score
-
-    def all_valid_moves(g, s):
-        return g.children
-
-    search = GameSearch(score_state, all_valid_moves)
-    search_state = {
-        "g_depth": 0,
-        "s_depth": 5
-    }
-    result = search.alpha_beta_max(game_tree, search_state, 5)
+    result = alpha_beta_basic(game_tree, next_actions, score_state, apply_action, 5)
 
     assert result[0] == 7
-    assert result[1].static_score == 1
+    assert result[1] == 0
     assert score_call_vals == [8, 7, 3, 9, 8]

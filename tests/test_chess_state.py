@@ -24,10 +24,10 @@ def test_fen_to_initial_state():
     assert state.halfmoves == 0
     assert state.move == 1
     assert state.material_balance == 0
-    assert state.king_pos == {
-        "k": (0, 4),
-        "K": (7, 4)
-    }
+    k_pos, = state.positions["k"]
+    K_pos, = state.positions["K"]
+    assert k_pos == (0, 4)
+    assert K_pos == (7, 4)
     assert state.check_state is False
 
 
@@ -51,10 +51,10 @@ def test_fen_to_check_state():
     assert state.halfmoves == 0
     assert state.move == 16
     assert state.material_balance == -150
-    assert state.king_pos == {
-        "k": (0, 4),
-        "K": (7, 2)
-    }
+    k_pos, = state.positions["k"]
+    K_pos, = state.positions["K"]
+    assert k_pos == (0, 4)
+    assert K_pos == (7, 2)
     assert state.check_state is True
 
 
@@ -62,19 +62,6 @@ def test_to_fen():
     state = fen_to_state(initial_fen)
     fen = state.to_fen()
     assert fen == initial_fen
-
-
-def assert_state_board_diff(s1, s2):
-    assert s1.is_done == s2.is_done
-    assert s1.active_color == s2.active_color
-    assert s1.castling_available == s2.castling_available
-    assert s1.en_passant_target == s2.en_passant_target
-    assert s1.halfmoves == s2.halfmoves
-    assert s1.move == s2.move
-    assert s1.material_balance == s2.material_balance
-    assert s1.king_pos == s2.king_pos
-    assert s1.check_state == s2.check_state
-    assert s1.board != s2.board
 
 
 def assert_state_eq(s1, s2):
@@ -85,7 +72,7 @@ def assert_state_eq(s1, s2):
     assert s1.halfmoves == s2.halfmoves
     assert s1.move == s2.move
     assert s1.material_balance == s2.material_balance
-    assert s1.king_pos == s2.king_pos
+    assert s1.positions == s2.positions
     assert s1.check_state == s2.check_state
     assert s1.board == s2.board
 
@@ -96,13 +83,25 @@ def test_board_apply_typical():
     from_ = (6, 4)
     to_ = (4, 4)
     expected = [
-        (from_, "P"),
-        (to_, None)
+        (from_, to_, "P"),
+        (to_, None, None)
     ]
     move = Move(from_, to_, None, (3, 4), None, None)
     undo = s1.board_apply(move)
     assert undo == expected
-    assert_state_board_diff(s1, s2)
+    assert s1.is_done == s2.is_done
+    assert s1.active_color == s2.active_color
+    assert s1.castling_available == s2.castling_available
+    assert s1.en_passant_target == s2.en_passant_target
+    assert s1.halfmoves == s2.halfmoves
+    assert s1.move == s2.move
+    assert s1.material_balance == s2.material_balance
+    k_pos, = s2.positions["k"]
+    K_pos, = s2.positions["K"]
+    assert k_pos == (0, 7)
+    assert K_pos == (7, 0)
+    assert s1.check_state == s2.check_state
+    assert s1.board != s2.board
     s1.board_undo(undo)
     assert_state_eq(s1, s2)
 
@@ -112,11 +111,12 @@ def test_board_apply_castling():
     s2 = deepcopy(s1)
     from_ = (7, 4)
     to_ = (7, 6)
+    c_to = (7, 5)
     expected = [
-        (from_, "K"),
-        (to_, None),
-        ((7, 7), "R"),
-        ((7, 5), None)
+        (from_, to_, "K"),
+        (to_, None, None),
+        ((7, 7), c_to, "R"),
+        (c_to, None, None)
     ]
     move = Move(from_, to_, None, None, None, "-", "K")
     undo = s1.board_apply(move)
@@ -126,7 +126,7 @@ def test_board_apply_castling():
     assert s1.active_color == s2.active_color
     assert s1.castling_available == s2.castling_available
     assert s1.board != s2.board
-    assert s1.king_pos != s2.king_pos
+    assert s1.positions != s2.positions
     s1.board_undo(undo)
     assert_state_eq(s1, s2)
 
@@ -137,8 +137,8 @@ def test_apply_typical():
     from_ = (6, 4)
     to_ = (4, 4)
     board_undo = [
-        (from_, "P"),
-        (to_, None)
+        (from_, to_, "P"),
+        (to_, None, None)
     ]
     move = Move(from_, to_)
     expected = Undo(
@@ -160,11 +160,12 @@ def test_apply_castling():
     s2 = deepcopy(s1)
     from_ = (7, 4)
     to_ = (7, 6)
+    c_to = (7, 5)
     board_undo = [
-        (from_, "K"),
-        (to_, None),
-        ((7, 7), "R"),
-        ((7, 5), None)
+        (from_, to_, "K"),
+        (to_, None, None),
+        ((7, 7), c_to, "R"),
+        (c_to, None, None)
     ]
     move = Move(from_, to_, None, None, None, "-", "K")
     expected = Undo(
@@ -186,11 +187,13 @@ def test_apply_ep_capture():
     s2 = deepcopy(s1)
     from_ = (3, 3)
     to_ = (2, 2)
-    ept_cap = ((3, 2), "p")
+    ept = (3, 2)
+    epp = "p"
+    ept_cap = (ept, epp)
     board_undo = [
-        (from_, "P"),
-        (to_, None),
-        ept_cap
+        (from_, to_, "P"),
+        (to_, None, None),
+        (ept, None, epp)
     ]
     move = Move(from_, to_, None, None, ept_cap)
     expected = Undo(
@@ -216,8 +219,8 @@ def test_apply_from_check():
     from_ = (7, 4)
     to_ = (6, 3)
     board_undo = [
-        (from_, "K"),
-        (to_, "p")
+        (from_, to_, "K"),
+        (to_, None, "p")
     ]
     move = Move(from_, to_, "p")
     expected = Undo(
