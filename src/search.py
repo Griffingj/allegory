@@ -1,5 +1,3 @@
-from copy import copy
-
 from src.primitive import lowest, highest
 
 
@@ -87,100 +85,31 @@ def alpha_beta_basic(
 
 
 class GameSearch():
-    def __init__(self, score_state, next_actions, apply_action, undo_action, score_end, is_last_action):
+    def __init__(self, score_state, next_actions, apply_action, undo_action, score_end, is_winning_action):
         self.score_state = score_state
         self.next_actions = next_actions
         self.apply_action = apply_action
         self.undo_action = undo_action
         self.score_end = score_end
-        self.is_last_action = is_last_action
+        self.is_winning_action = is_winning_action
+        self.critical_path = [None] * 30
+        self.path = [None] * 30
 
-    # def alpha_beta_enh2(
-    #         self,
-    #         game_state,
-    #         diag,
-    #         scan_depth,
-    #         max_prior_best=(lowest, None),
-    #         min_prior_best=(highest, None)):
-
-    #     if scan_depth == 0:
-    #         diag.count("leaf")
-    #         return (self.score_state(game_state), None)
-    #     else:
-    #         if game_state.is_maxer:
-    #             max_best = (lowest, None)
-    #             actions = self.next_actions(game_state)
-
-    #             if not actions:
-    #                 diag.count("noMoves")
-    #                 return (self.score_end(game_state), None)
-
-    #             for action in actions:
-    #                 if self.is_last_action(action):
-    #                     return (self.score_end(game_state), None)
-
-    #                 (new_state, undo) = self.apply_action(game_state, action)
-    #                 alpha_meta = max_best if max_best[0] > max_prior_best[0] else max_prior_best
-
-    #                 (next_score, _) = self.alpha_beta_enh2(
-    #                     new_state,
-    #                     diag,
-    #                     scan_depth - 1,
-    #                     alpha_meta,
-    #                     min_prior_best
-    #                 )
-    #                 new_state.undo(undo)
-
-    #                 if next_score > max_best[0]:
-    #                     max_best = (next_score, action)
-
-    #                 if min_prior_best[0] <= max_best[0]:
-    #                     diag.count("alphaPrune")
-    #                     break
-    #             return max_best
-    #         else:
-    #             min_best = (highest, None)
-    #             actions = self.next_actions(game_state)
-
-    #             if not actions:
-    #                 diag.count("noMoves")
-    #                 return (self.score_end(game_state), None)
-
-    #             for action in self.next_actions(game_state):
-    #                 if self.is_last_action(action):
-    #                     return (self.score_end(game_state), None)
-
-    #                 (new_state, undo) = self.apply_action(game_state, action)
-    #                 beta_meta = min_best if min_best[0] < min_prior_best[0] else min_prior_best
-
-    #                 (next_score, _) = self.alpha_beta_enh2(
-    #                     new_state,
-    #                     diag,
-    #                     scan_depth - 1,
-    #                     max_prior_best,
-    #                     beta_meta
-    #                 )
-    #                 new_state.undo(undo)
-
-    #                 if next_score < min_best[0]:
-    #                     min_best = (next_score, action)
-
-    #                 if max_prior_best[0] >= min_best[0]:
-    #                     diag.count("betaPrune")
-    #                     break
-
-    #             return min_best
-
-    def alpha_beta_enh(
+    def alpha_beta_enh_r(
             self,
             game_state,
-            diag,
             scan_depth,
-            max_prior_best=(lowest, None),
-            min_prior_best=(highest, None)):
+            initial_depth,
+            diag,
+            alpha=(lowest, None),
+            beta=(highest, None)):
 
-        if scan_depth == 0:
+        d = initial_depth - scan_depth
+
+        if scan_depth == 0 or game_state.is_done:
             diag.count("leaf")
+            # idx = d - 2
+            # last_action_same_side = self.path[idx] if idx > 0 else None
             return (self.score_state(game_state), None)
         else:
             if game_state.is_maxer:
@@ -192,31 +121,32 @@ class GameSearch():
                     return (self.score_end(game_state), None)
 
                 for action in actions:
-                    if self.is_last_action(action):
-                        diag.count("done")
-                        diag.info["donePaths"].append(copy(diag.history))
-                        return (self.score_end(game_state), None)
-
                     (new_state, undo) = self.apply_action(game_state, action)
-                    diag.history.append(action)
-                    alpha_meta = max_best if max_best[0] > max_prior_best[0] else max_prior_best
+                    self.path[d] = action
 
-                    (next_score, _) = self.alpha_beta_enh(
+                    if self.is_winning_action(action):
+                        return (highest, action)
+
+                    next_alpha = max_best if max_best[0] > alpha[0] else alpha
+
+                    (next_score, _) = self.alpha_beta_enh_r(
                         new_state,
-                        diag,
                         scan_depth - 1,
-                        alpha_meta,
-                        min_prior_best
+                        initial_depth,
+                        diag,
+                        next_alpha,
+                        beta
                     )
                     new_state.undo(undo)
-                    diag.history.pop()
 
                     if next_score > max_best[0]:
                         max_best = (next_score, action)
 
-                    if min_prior_best[0] <= max_best[0]:
+                    if beta[0] <= max_best[0]:
                         diag.count("alphaPrune")
                         break
+
+                self.critical_path[d] = max_best[1]
                 return max_best
             else:
                 min_best = (highest, None)
@@ -227,30 +157,30 @@ class GameSearch():
                     return (self.score_end(game_state), None)
 
                 for action in self.next_actions(game_state):
-                    if self.is_last_action(action):
-                        diag.count("done")
-                        diag.info["donePaths"].append(copy(diag.history))
-                        return (self.score_end(game_state), None)
-
                     (new_state, undo) = self.apply_action(game_state, action)
-                    diag.history.append(action)
-                    beta_meta = min_best if min_best[0] < min_prior_best[0] else min_prior_best
+                    self.path[d] = action
 
-                    (next_score, _) = self.alpha_beta_enh(
+                    if self.is_winning_action(action):
+                        return (lowest, action)
+
+                    next_beta = min_best if min_best[0] < beta[0] else beta
+
+                    (next_score, _) = self.alpha_beta_enh_r(
                         new_state,
-                        diag,
                         scan_depth - 1,
-                        max_prior_best,
-                        beta_meta
+                        initial_depth,
+                        diag,
+                        alpha,
+                        next_beta
                     )
                     new_state.undo(undo)
-                    diag.history.pop()
 
                     if next_score < min_best[0]:
                         min_best = (next_score, action)
 
-                    if max_prior_best[0] >= min_best[0]:
+                    if alpha[0] >= min_best[0]:
                         diag.count("betaPrune")
                         break
 
+                self.critical_path[d] = min_best[1]
                 return min_best

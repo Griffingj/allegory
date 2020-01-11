@@ -2,9 +2,22 @@ from itertools import cycle
 from collections import namedtuple
 
 from src.chess.chess_consts import b_range, black_pieces, white_pieces, pawns, knights, bishops, rooks, queens, kings,\
-    white, white_castling, black_castling, castling_block, castling_check, castling_rooks
+    white, white_castling, black_castling, castling_block, castling_check, castling_rooks, white_pinners, black_pinners,\
+    material
 
 from src.primitive import subtract, intersect
+
+from src.vector2 import is_shared_cardinal, is_shared_diag, v2_range, difference, v2_abs
+
+# pawns = 32
+# rooks = 28
+# knights = 16
+# bishops = 26
+# queens = 27
+# king = 10
+# 139
+
+
 
 # all 2d coords are in (y, x) form where positive y is down (from white's perspective),
 # this is to ease working with 2d array board representation
@@ -54,87 +67,83 @@ Move = namedtuple("Move", [
 ], defaults=(None, None, None, None, None, None, None))
 
 
-def is_attacked_by(chess_state, a, b):
-    return False
+def in_board(v2):
+    return v2[0] >= 0 and v2[0] <= 7 and v2[1] >= 0 and v2[1] <= 7
+
+
+def is_attacked_by(chess_state, pos, a_pos, ignored=empty_set, enemies_only=True):
+    (i, j) = pos
+    attacker = chess_state.pos(a_pos)
+    pos_list = [pos, a_pos]
+    friends = white_pieces if chess_state.active_color == white else black_pieces
+
+    if enemies_only and attacker in friends:
+        return False
+
+    if attacker is None or pos == a_pos:
+        return False
+    elif attacker in pawns:
+        fwd_dir = -1 if chess_state.active_color == white else 1
+        return a_pos == (i + fwd_dir, j + 1) or a_pos == (i + fwd_dir, j - 1)
+    elif attacker in queens:
+        if is_shared_cardinal(pos_list) or is_shared_diag(pos_list):
+            for p in v2_range(pos, a_pos):
+                if p in ignored:
+                    continue
+                if chess_state.pos(p) is not None:
+                    return False
+            return True
+        else:
+            return False
+    elif attacker in rooks:
+        if is_shared_cardinal(pos_list):
+            for p in v2_range(pos, a_pos):
+                if p in ignored:
+                    continue
+                if chess_state.pos(p) is not None:
+                    return False
+            return True
+        else:
+            return False
+    elif attacker in bishops:
+        if is_shared_diag(pos_list):
+            for p in v2_range(pos, a_pos):
+                if p in ignored:
+                    continue
+                if chess_state.pos(p) is not None:
+                    return False
+            return True
+        else:
+            return False
+    elif attacker in knights:
+        abs_diff = v2_abs(difference(pos, a_pos))
+        return 2 == abs_diff[0] * abs_diff[1]
+    elif attacker in kings:
+        abs_diff = v2_abs(difference(pos, a_pos))
+        return abs_diff == (1, 1) or abs_diff == (0, 1) or abs_diff == (1, 0)
 
 
 def is_attacked(chess_state, pos, ignored=empty_set):
     (i, j) = pos
-    friendly_pieces = white_pieces if chess_state.active_color == white else black_pieces
+    pinners = black_pinners if chess_state.active_color == white else white_pinners
+    enemy_knights = "n" if chess_state.active_color == white else "N"
+    enemy_pawns = "p" if chess_state.active_color == white else "P"
+    fwd_dir = -1 if chess_state.active_color == white else 1
 
-    # radiance style check for attacks covering blockages due to friendly pieces and all attack possibilites
-    # except knights which are handled separately below
-    for ray in eight_ray_iter:
-        direction = next(omni_dir)
-        (i_dir, j_dir) = direction
+    for d in dir_left_right:
+        to = (i + fwd_dir, j + d)
 
-        for distance in ray:
-            i_tar = i_dir * distance + i
-            j_tar = j_dir * distance + j
-            to = (i_tar, j_tar)
+        if in_board(to):
+            p = chess_state.pos(to)
 
-            if i_tar in b_range and j_tar in b_range and to not in ignored:
-                piece = chess_state.board[i_tar][j_tar]
-
-                if piece in friendly_pieces:
-                    break
-                elif piece in pawns:
-                    fwd_dir = -1 if chess_state.active_color == white else 1
-
-                    if distance == 1 and i_tar == i + fwd_dir and direction in diag:
-                        return True
-                    else:
-                        break
-                elif piece in knights:
-                    break
-                elif piece in bishops:
-                    if direction in diag:
-                        return True
-                    else:
-                        break
-                elif piece in rooks:
-                    if direction in cardinal:
-                        return True
-                    else:
-                        break
-                elif piece in queens:
-                    return True
-                elif piece in kings:
-                    if distance == 1:
-                        return True
-                    else:
-                        break
-
-    for (i_offset, j_offset) in knight_o:
-        i_tar = i + i_offset
-        j_tar = j + j_offset
-
-        if i_tar in b_range and j_tar in b_range:
-            piece = chess_state.board[i_tar][j_tar]
-
-            if piece in knights and piece not in friendly_pieces:
+            if p is not None and p in enemy_pawns:
                 return True
 
+    for piece in pinners + enemy_knights:
+        for a_pos in chess_state.positions[piece]:
+            if is_attacked_by(chess_state, pos, a_pos, ignored):
+                return True
     return False
-
-
-def _is_check_locked(chess_state, move):
-    back = chess_state.board_apply(move)
-    king_piece = "K" if chess_state.active_color == white else "k"
-    king_pos, = chess_state.positions[king_piece]
-    is_check = is_attacked(chess_state, king_pos)
-    chess_state.board_undo(back)
-    return is_check
-
-
-def is_check_locked(chess_state, move):
-    # piece = chess_state.pos(move._from)
-
-    if chess_state.check_state:
-        return _is_check_locked(chess_state, move)
-    else:
-        # check king danger
-        return _is_check_locked(chess_state, move)
 
 
 def get_moves(chess_state):
@@ -148,8 +157,6 @@ def get_moves(chess_state):
     # k -> key, as in map key ~ symbolic id
     # ca -> castling availability
 
-    color_fwd = -1 if chess_state.active_color == white else 1
-    leap_file = 6 if chess_state.active_color == white else 1
     enemy_pieces = black_pieces if chess_state.active_color == white else white_pieces
     friendly_pieces = white_pieces if chess_state.active_color == white else black_pieces
     color_castling = white_castling if chess_state.active_color == white else black_castling
@@ -167,24 +174,22 @@ def get_moves(chess_state):
             from_ = (i, j)
 
             if piece in pawns:
-                if chess_state.board[i + 1 * color_fwd][j] is None:
-                    short_to = (i + 1 * color_fwd, j)
-                    move = Move(from_, short_to)
+                color_fwd = -1 if chess_state.active_color == white else 1
+                i_tar = i + color_fwd
+                short_to = (i_tar, j)
 
-                    if not is_check_locked(chess_state, move):
-                        moves.append(move)
+                if in_board(short_to) and chess_state.board[i_tar][j] is None:
+                    moves.append(Move(from_, short_to))
 
                     # Pawn "leap" move
-                    if chess_state.board[leap_file + 2 * color_fwd][j] is None and i == leap_file:
-                        to = (leap_file + 2 * color_fwd, j)
-                        move = Move(from_, to, None, short_to)
+                    leap_file = 6 if chess_state.active_color == white else 1
 
-                        if not is_check_locked(chess_state, move):
-                            moves.append(move)
+                    if i == leap_file and chess_state.board[i_tar + color_fwd][j] is None:
+                        to = (i_tar + color_fwd, j)
+                        moves.append(Move(from_, to, None, short_to))
 
                 # Attacks
                 for left_right in dir_left_right:
-                    i_tar = i + 1 * color_fwd
                     j_tar = j + 1 * left_right
 
                     if j_tar in b_range:
@@ -192,18 +197,12 @@ def get_moves(chess_state):
                         victim = chess_state.board[i_tar][j_tar]
 
                         if to == chess_state.en_passant_target:
-                            ep_victim = chess_state.board[i_tar - color_fwd][j_tar]
+                            ep_victim = chess_state.board[i][j_tar]
                             ept_cap = (to, ep_victim)
-                            move = Move(from_, to, None, None, ept_cap)
-
-                            if not is_check_locked(chess_state, move):
-                                moves.append(move)
+                            moves.append(Move(from_, to, None, None, ept_cap))
 
                         elif victim in enemy_pieces:
-                            move = Move(from_, to, victim)
-
-                            if not is_check_locked(chess_state, move):
-                                moves.append(move)
+                            moves.append(Move(from_, to, victim))
 
             # Fixed offset assessment (knights, kings)
             elif piece in knights or piece in kings:
@@ -212,28 +211,26 @@ def get_moves(chess_state):
                 for (i_offset, j_offset) in offsets:
                     i_tar = i_offset + i
                     j_tar = j_offset + j
+                    to = (i_tar, j_tar)
 
-                    if i_tar in b_range and j_tar in b_range:
+                    if in_board(to):
                         victim = chess_state.board[i_tar][j_tar]
 
                         if victim not in friendly_pieces:
-                            to = (i_tar, j_tar)
-
                             if piece in kings:
-                                # castle invalidation if king moves
+                                # Castle invalidation if king moves
                                 new_ca = subtract(ca, color_castling)
                                 ca_to = "-" if new_ca is not None and len(new_ca) == 0 else new_ca
-                                move = Move(from_, to, victim, None, None, ca_to)
-
-                                if not is_attacked(chess_state, to, set([from_])):
-                                    moves.append(move)
+                                moves.append(Move(from_, to, victim, None, None, ca_to))
                             else:
-                                move = Move(from_, to, victim)
-                                if not is_check_locked(chess_state, move):
-                                    moves.append(move)
+                                moves.append(Move(from_, to, victim))
 
                 # Castling for kings
-                if piece in kings and len(ca) and not chess_state.check_state:
+                if piece in kings and len(ca):
+                    # Can't castle out of check
+                    if is_attacked(chess_state, from_):
+                        continue
+
                     for k in ca:
                         cont = False
 
@@ -266,8 +263,7 @@ def get_moves(chess_state):
                             to = (0, 2)
 
                         ca_to = "-" if len(new_ca) == 0 else new_ca
-                        move = Move(from_, to, None, None, None, ca_to, k)
-                        moves.append(move)
+                        moves.append(Move(from_, to, None, None, None, ca_to, k))
 
             # Radiance style move assessment (Rooks, Bishops, Queens)
             elif piece in bishops or piece in rooks or piece in queens:
@@ -280,8 +276,9 @@ def get_moves(chess_state):
                     for distance in ray:
                         i_tar = i_dir * distance + i
                         j_tar = j_dir * distance + j
+                        to = (i_tar, j_tar)
 
-                        if i_tar in b_range and j_tar in b_range:
+                        if in_board(to):
                             victim = chess_state.board[i_tar][j_tar]
                             friendly = victim in friendly_pieces
 
@@ -295,10 +292,7 @@ def get_moves(chess_state):
                                             new_ca = subtract(ca, k)
 
                                 ca_to = "-" if new_ca is not None and len(new_ca) == 0 else new_ca
-                                move = Move(from_, (i_tar, j_tar), victim, None, None, ca_to)
-
-                                if not is_check_locked(chess_state, move):
-                                    moves.append(move)
+                                moves.append(Move(from_, to, victim, None, None, ca_to))
 
                                 if victim is not None:
                                     break

@@ -16,6 +16,9 @@ rooks = set("rR")
 queens = set("qQ")
 kings = set("kK")
 
+white_pinners = "QRB"
+black_pinners = "qrb"
+
 # bounds checking for coords
 b_range = set(range(0, 8))
 

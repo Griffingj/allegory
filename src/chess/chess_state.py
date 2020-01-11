@@ -1,9 +1,7 @@
 from collections import namedtuple
 
-from src.chess.chess_movement import is_attacked
-
 from src.chess.chess_consts import b_range, white, black, castling_rooks, material, pieces,\
-    initial_fen, ranks, files
+    initial_fen, ranks, files, kings
 
 empty_set = set()
 
@@ -12,7 +10,6 @@ Undo = namedtuple("Undo", [
     "undo_ca",
     "undo_ept",
     "undo_board",
-    "undo_check_state",
     "redo_move"
 ])
 
@@ -41,8 +38,7 @@ class ChessState():
             move,  # The turn counter, incremented after each player has played a turn
             board,
             positions,
-            material_balance,
-            check_state):
+            material_balance):
 
         self.is_done = is_done
         self.active_color = active_color
@@ -53,7 +49,6 @@ class ChessState():
         self.board = board
         self.positions = positions
         self.material_balance = material_balance
-        self.check_state = check_state
 
     def to_fen(self):
         # A FEN "record" defines a particular game position, all in one text line and using only the ASCII character
@@ -162,6 +157,9 @@ class ChessState():
         if move.victim is not None:
             self.material_balance -= material[move.victim]
 
+        if move.victim in kings:
+            self.is_done = True
+
         if move.ept_cap is not None:
             (pos, piece) = move.ept_cap
             self.material_balance -= material[piece]
@@ -180,18 +178,11 @@ class ChessState():
         # Color change affects subject in "is_attacked" etc
         self.active_color = black if self.active_color == white else white
 
-        undo_check_state = self.check_state
-        king_piece = "K" if self.active_color == white else "k"
-        king_pos, = self.positions[king_piece]
-
-        self.check_state = is_attacked(self, king_pos)
-
         return Undo(
             undo_balance,
             undo_ca,
             undo_ept,
             undo_board,
-            undo_check_state,
             move
         )
 
@@ -201,7 +192,6 @@ class ChessState():
             undo_ca,
             undo_ept,
             undo_board,
-            undo_check_state,
             move
         ) = undo
 
@@ -212,10 +202,10 @@ class ChessState():
         if undo_ept is not None:
             self.en_passant_target = undo_ept
 
-        self.check_state = undo_check_state
         self.board_undo(undo_board)
         self.move -= 1 if self.active_color == white else 0
         self.active_color = black if self.active_color == white else white
+        self.is_done = False
         return move
 
     def pos(self, pos):
@@ -241,22 +231,22 @@ def fen_to_state(fen_str):
     positions = {}
     i = 0
 
+    for p in pieces:
+        positions[p] = set()
+
     for file_str in files.split("/"):
         file_arr = []
 
         for c in file_str:
             if c in pieces:
                 file_arr.append(c)
-                new_pos = positions.get(c, set())
-                new_pos.add((i, len(file_arr) - 1))
-                positions[c] = new_pos
+                positions.get(c).add((i, len(file_arr) - 1))
             else:
                 for n in range(0, int(c)):
                     file_arr.append(None)
         board.append(file_arr)
         i += 1
 
-    active_king = "K" if color == white else "k"
     en_passant_target = chess_to_coords(ept) if ept != "-" else None
     castling_available = ca if ca != "-" else None
 
@@ -269,15 +259,8 @@ def fen_to_state(fen_str):
         move=int(moves),
         board=board,
         positions=positions,
-        material_balance=calc_material_balance(board),
-        check_state=False
+        material_balance=calc_material_balance(board)
     )
-
-    if active_king in positions:
-        king_pos, = positions[active_king]
-        state.check_state = is_attacked(state, king_pos)
-    else:
-        raise Exception(f"Counldn't find active king.")
 
     return state
 

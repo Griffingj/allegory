@@ -1,3 +1,6 @@
+import functools
+import math
+
 lowest = float("-inf")
 highest = float("inf")
 
@@ -53,3 +56,6 @@ def intersect(str1, str2):
 
 def clamp(l, v, h=highest):
     return max(l, min(v, h))
+
+
+sign = functools.partial(math.copysign, 1)
