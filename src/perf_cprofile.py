@@ -13,7 +13,8 @@ if __name__ == "__main__":
 
     # s1 = fen_to_state("4k3/8/8/8/4q3/3P4/8/4K3 w - - 0 50")
     # s1 = fen_to_state("2r3k1/1pq2p1p/p2Q1np1/4p3/2r1P3/2N1R2P/P1P2PP1/3R2K1 b - - 0 25")  # GM game
-    s1 = fen_to_state("2r3k1/1pq2p1p/p2Q1npb/b3p3/2r1P2B/1BN1R2P/PnP2PP1/3R2K1 b - - 0 25")  # GM game modified to put back all major pieces
+    # s1 = fen_to_state("1Q2kb1r/p2n1ppp/4q3/4p1B1/4P3/8/PPP2PPP/2KR4 b - - 0 24")  # "Opera" game
+    s1 = fen_to_state("2r3k1/1pq2p1p/p2Q1npb/b3p3/2r1P2B/1BN1R2P/PnP2PP1/3R2K1 b - - 0 25")  # GM game modified
     # s1 = fen_to_state("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
     ca = ChessAgent(20)

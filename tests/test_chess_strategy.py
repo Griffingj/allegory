@@ -1,4 +1,4 @@
-from src.chess.chess_agency import next_actions, score_move, ChessAgent
+from src.chess.chess_strategy import next_actions, score_move
 from src.chess.chess_state import fen_to_state
 from src.chess.chess_movement import Move
 
@@ -97,13 +97,3 @@ def test_next_actions():
             new_castling_available='-', castle=None
         )
     ]
-
-
-def test_agent():
-    s1 = fen_to_state("4k3/8/8/8/4q3/3P4/8/4K3 w - - 0 50")
-    ca = ChessAgent(2)
-    best = ca.start_game(s1)
-    assert best == Move(
-        from_=(5, 3), to_=(4, 4), victim='q', new_en_passant_target=None, ept_cap=None,
-        new_castling_available=None, castle=None
-    )

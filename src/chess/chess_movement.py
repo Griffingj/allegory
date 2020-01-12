@@ -119,14 +119,14 @@ def is_attacked_by(chess_state, pos, a_pos, ignored=empty_set, enemies_only=True
         abs_diff = v2_abs(difference(pos, a_pos))
         return 2 == abs_diff[0] * abs_diff[1]
     elif attacker in kings:
-        abs_diff = v2_abs(difference(pos, a_pos))
-        return abs_diff == (1, 1) or abs_diff == (0, 1) or abs_diff == (1, 0)
+        return v2_abs(difference(pos, a_pos)) in [(1, 1), (0, 1), (1, 0)]
 
 
 def is_attacked(chess_state, pos, ignored=empty_set):
     (i, j) = pos
     pinners = black_pinners if chess_state.active_color == white else white_pinners
     enemy_knights = "n" if chess_state.active_color == white else "N"
+    enemy_king = "k" if chess_state.active_color == white else "K"
     enemy_pawns = "p" if chess_state.active_color == white else "P"
     fwd_dir = -1 if chess_state.active_color == white else 1
 
@@ -139,7 +139,7 @@ def is_attacked(chess_state, pos, ignored=empty_set):
             if p is not None and p in enemy_pawns:
                 return True
 
-    for piece in pinners + enemy_knights:
+    for piece in pinners + enemy_knights + enemy_king:
         for a_pos in chess_state.positions[piece]:
             if is_attacked_by(chess_state, pos, a_pos, ignored):
                 return True

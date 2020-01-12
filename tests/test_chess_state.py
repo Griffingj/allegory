@@ -28,34 +28,6 @@ def test_fen_to_initial_state():
     K_pos, = state.positions["K"]
     assert k_pos == (0, 4)
     assert K_pos == (7, 4)
-    assert state.check_state is False
-
-
-def test_fen_to_check_state():
-    # Opera game move 16
-    state = fen_to_state("1Q2kb1r/p2n1ppp/4q3/4p1B1/4P3/8/PPP2PPP/2KR4 b - - 0 16")
-    assert state.board == [
-        [None, "Q",  None, None, "k",  "b",  None, "r"],
-        ["p",  None, None, "n",  None, "p",  "p",  "p"],
-        [None, None, None, None, "q",  None, None, None],
-        [None, None, None, None, "p",  None, "B",  None],
-        [None, None, None, None, "P",  None, None, None],
-        [None, None, None, None, None, None, None, None],
-        ["P",  "P",  "P",  None, None, "P",  "P",  "P"],
-        [None, None, "K",  "R",  None, None, None, None]
-    ]
-    assert not state.is_done
-    assert state.active_color == "b"
-    assert state.castling_available is None
-    assert state.en_passant_target is None
-    assert state.halfmoves == 0
-    assert state.move == 16
-    assert state.material_balance == -150
-    k_pos, = state.positions["k"]
-    K_pos, = state.positions["K"]
-    assert k_pos == (0, 4)
-    assert K_pos == (7, 2)
-    assert state.check_state is True
 
 
 def test_to_fen():
@@ -73,7 +45,6 @@ def assert_state_eq(s1, s2):
     assert s1.move == s2.move
     assert s1.material_balance == s2.material_balance
     assert s1.positions == s2.positions
-    assert s1.check_state == s2.check_state
     assert s1.board == s2.board
 
 
@@ -100,7 +71,6 @@ def test_board_apply_typical():
     K_pos, = s2.positions["K"]
     assert k_pos == (0, 7)
     assert K_pos == (7, 0)
-    assert s1.check_state == s2.check_state
     assert s1.board != s2.board
     s1.board_undo(undo)
     assert_state_eq(s1, s2)
@@ -146,7 +116,6 @@ def test_apply_typical():
         s2.castling_available,
         s2.en_passant_target,
         board_undo,
-        s2.check_state,
         move
     )
     back = s1.apply(move)
@@ -173,7 +142,6 @@ def test_apply_castling():
         s2.castling_available,
         s2.en_passant_target,
         board_undo,
-        s2.check_state,
         move
     )
     back = s1.apply(move)
@@ -201,7 +169,6 @@ def test_apply_ep_capture():
         s2.castling_available,
         s2.en_passant_target,
         board_undo,
-        s2.check_state,
         move
     )
     back = s1.apply(move)
@@ -214,7 +181,6 @@ def test_apply_ep_capture():
 
 def test_apply_from_check():
     s1 = fen_to_state("4k3/8/8/8/8/8/3p4/R3K2R w KQ - 0 50")
-    assert s1.check_state
     s2 = deepcopy(s1)
     from_ = (7, 4)
     to_ = (6, 3)
@@ -228,11 +194,9 @@ def test_apply_from_check():
         s2.castling_available,
         s2.en_passant_target,
         board_undo,
-        s2.check_state,
         move
     )
     back = s1.apply(move)
-    assert not s1.check_state
     assert back == expected
     s1.undo(back)
     assert_state_eq(s1, s2)

@@ -7,8 +7,8 @@ def v2_range(v1, v2):
     next_ = (v1[0] + step0, v1[1] + step1)
     while next_ != v2:
         yield next_
-        n0 = next_[0] + step0 if next_[0] != v2[0] else 0
-        n1 = next_[1] + step1 if next_[1] != v2[1] else 0
+        n0 = next_[0] + (step0 if next_[0] != v2[0] else 0)
+        n1 = next_[1] + (step1 if next_[1] != v2[1] else 0)
         next_ = (n0, n1)
 
 
@@ -63,8 +63,12 @@ def is_shared_cardinal(positions):
 
 
 def difference(v1, v2):
-    return (v1[0] - v2[0], v1[1], v2[1])
+    return (v1[0] - v2[0], v1[1] - v2[1])
 
 
 def v2_abs(v1):
     return (abs(v1[0]), abs(v1[1]))
+
+
+def sqr_mag(v1):
+    return v1[0] ** 2 + v1[1] ** 2
