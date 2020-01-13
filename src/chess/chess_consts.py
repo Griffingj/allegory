@@ -15,9 +15,12 @@ bishops = set("bB")
 rooks = set("rR")
 queens = set("qQ")
 kings = set("kK")
+major_pieces = knights | bishops | rooks | queens
+not_pawns = major_pieces | kings
 
-white_pinners = "QRB"
-black_pinners = "qrb"
+white_pinners = set("QRB")
+black_pinners = set("qrb")
+pinners = white_pinners | black_pinners
 
 # bounds checking for coords
 b_range = set(range(0, 8))
@@ -38,7 +41,8 @@ material = {
     "B": 350,
     "R": 525,
     "Q": 1000,
-    "K": 10000
+    "K": 10000,
+    None: 0
 }
 
 white_castling = "KQ"

@@ -2,22 +2,12 @@ from itertools import cycle
 from collections import namedtuple
 
 from src.chess.chess_consts import b_range, black_pieces, white_pieces, pawns, knights, bishops, rooks, queens, kings,\
-    white, white_castling, black_castling, castling_block, castling_check, castling_rooks, white_pinners, black_pinners,\
-    material
+    white, white_castling, black_castling, castling_block, castling_check, castling_rooks, white_pinners,\
+    black_pinners, pinners, not_pawns
 
 from src.primitive import subtract, intersect
 
-from src.vector2 import is_shared_cardinal, is_shared_diag, v2_range, difference, v2_abs
-
-# pawns = 32
-# rooks = 28
-# knights = 16
-# bishops = 26
-# queens = 27
-# king = 10
-# 139
-
-
+from src.vector2 import is_shared_cardinal, is_shared_diag, is_shared_union_jack, v2_range, difference, v2_abs
 
 # all 2d coords are in (y, x) form where positive y is down (from white's perspective),
 # this is to ease working with 2d array board representation
@@ -53,73 +43,70 @@ four_ray_iter = [range(1, 8)] * 4
 # maximum number of spaces to check to cover all possible board offsets for queens
 eight_ray_iter = [range(1, 8)] * 8
 
-empty_set = set()
-
 Move = namedtuple("Move", [
     "from_",
     "to_",
     "victim",
-    # "promotion", # TODO ...
     "new_en_passant_target",
     "ept_cap",
     "new_castling_available",
     "castle"
 ], defaults=(None, None, None, None, None, None, None))
 
+abs_unit_d = {
+    (1, 1), (0, 1), (1, 0)
+}
+
+empty_set = set()
+
+is_in_ray = {
+    "q": is_shared_union_jack,
+    "Q": is_shared_union_jack,
+    "r": is_shared_cardinal,
+    "R": is_shared_cardinal,
+    "b": is_shared_diag,
+    "B": is_shared_diag
+}
+
 
 def in_board(v2):
     return v2[0] >= 0 and v2[0] <= 7 and v2[1] >= 0 and v2[1] <= 7
 
 
-def is_attacked_by(chess_state, pos, a_pos, ignored=empty_set, enemies_only=True):
+def is_attacked_by(chess_state, pos, attacker_pos, enemies_only=True, ignored=empty_set):
     (i, j) = pos
-    attacker = chess_state.pos(a_pos)
-    pos_list = [pos, a_pos]
+    attacker = chess_state.pos(attacker_pos)
+    pos_list = [pos, attacker_pos]
     friends = white_pieces if chess_state.active_color == white else black_pieces
 
     if enemies_only and attacker in friends:
         return False
 
-    if attacker is None or pos == a_pos:
+    if attacker is None or pos == attacker_pos:
         return False
     elif attacker in pawns:
-        fwd_dir = -1 if chess_state.active_color == white else 1
-        return a_pos == (i + fwd_dir, j + 1) or a_pos == (i + fwd_dir, j - 1)
-    elif attacker in queens:
-        if is_shared_cardinal(pos_list) or is_shared_diag(pos_list):
-            for p in v2_range(pos, a_pos):
-                if p in ignored:
-                    continue
-                if chess_state.pos(p) is not None:
-                    return False
-            return True
+        diff = difference(pos, attacker_pos)
+
+        if enemies_only:
+            fwd_dir = -1 if chess_state.active_color == white else 1
+            return fwd_dir == -diff[0] and v2_abs(diff) == (1, 1)
         else:
-            return False
-    elif attacker in rooks:
-        if is_shared_cardinal(pos_list):
-            for p in v2_range(pos, a_pos):
-                if p in ignored:
+            return v2_abs(diff) == (1, 1)
+    elif attacker in pinners:
+        if is_in_ray[attacker](pos_list):
+            for i_pos in v2_range(pos, attacker_pos):
+                if i_pos in ignored:
                     continue
-                if chess_state.pos(p) is not None:
-                    return False
-            return True
-        else:
-            return False
-    elif attacker in bishops:
-        if is_shared_diag(pos_list):
-            for p in v2_range(pos, a_pos):
-                if p in ignored:
-                    continue
-                if chess_state.pos(p) is not None:
+                if chess_state.pos(i_pos) is not None:
                     return False
             return True
         else:
             return False
     elif attacker in knights:
-        abs_diff = v2_abs(difference(pos, a_pos))
+        abs_diff = v2_abs(difference(pos, attacker_pos))
         return 2 == abs_diff[0] * abs_diff[1]
     elif attacker in kings:
-        return v2_abs(difference(pos, a_pos)) in [(1, 1), (0, 1), (1, 0)]
+        return v2_abs(difference(pos, attacker_pos)) in abs_unit_d
 
 
 def is_attacked(chess_state, pos, ignored=empty_set):
@@ -139,11 +126,45 @@ def is_attacked(chess_state, pos, ignored=empty_set):
             if p is not None and p in enemy_pawns:
                 return True
 
-    for piece in pinners + enemy_knights + enemy_king:
+    for piece in pinners | set(enemy_knights + enemy_king):
         for a_pos in chess_state.positions[piece]:
-            if is_attacked_by(chess_state, pos, a_pos, ignored):
+            if is_attacked_by(chess_state, pos, a_pos, True, ignored):
                 return True
     return False
+
+
+def targeted_by(chess_state, pos):
+    (i, j) = pos
+    enemies = white_pieces if chess_state.active_color == white else black_pieces
+    enemy_pawn = "p" if chess_state.active_color == white else "P"
+    friend_pawn = "P" if chess_state.active_color == white else "p"
+    fwd_dir = -1 if chess_state.active_color == white else 1
+    enemy_targeters = []
+    friendly_targeters = []
+
+    for vert_o in dir_left_right:
+        for horz_o in dir_left_right:
+            to = (i + vert_o, j + horz_o)
+
+            if in_board(to):
+                attacker = chess_state.pos(to)
+
+                if attacker is not None:
+                    if attacker in enemy_pawn and vert_o == fwd_dir:
+                        enemy_targeters.append((to, enemy_pawn))
+                    elif attacker in friend_pawn and vert_o != fwd_dir:
+                        friendly_targeters.append((to, friend_pawn))
+
+    for piece in not_pawns:
+        for attack_pos in chess_state.positions[piece]:
+            if is_attacked_by(chess_state, pos, attack_pos, False):
+                attacker = chess_state.pos(attack_pos)
+                if attacker in enemies:
+                    enemy_targeters.append((attack_pos, attacker))
+                else:
+                    friendly_targeters.append((attack_pos, attacker))
+
+    return (enemy_targeters, friendly_targeters)
 
 
 def get_moves(chess_state):
@@ -207,6 +228,8 @@ def get_moves(chess_state):
             # Fixed offset assessment (knights, kings)
             elif piece in knights or piece in kings:
                 offsets = knight_o if piece in knights else omni
+                new_ca = subtract(ca, color_castling)
+                ca_to = "-" if new_ca is not None and len(new_ca) == 0 else new_ca
 
                 for (i_offset, j_offset) in offsets:
                     i_tar = i_offset + i
@@ -219,9 +242,9 @@ def get_moves(chess_state):
                         if victim not in friendly_pieces:
                             if piece in kings:
                                 # Castle invalidation if king moves
-                                new_ca = subtract(ca, color_castling)
-                                ca_to = "-" if new_ca is not None and len(new_ca) == 0 else new_ca
-                                moves.append(Move(from_, to, victim, None, None, ca_to))
+                                # Need to check this to ensure draw checks work
+                                if not is_attacked(chess_state, to):
+                                    moves.append(Move(from_, to, victim, None, None, ca_to))
                             else:
                                 moves.append(Move(from_, to, victim))
 

@@ -82,8 +82,8 @@ class ChessState():
             str(self.move)
         ])
 
-    def is_maxer(self):
-        return self.active_color == white
+    def player_affinity(self):
+        return 1 if self.active_color == white else -1
 
     def board_apply(self, move):
         (f_y, f_x) = move.from_

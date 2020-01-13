@@ -7,7 +7,6 @@ from src.chess.chess_strategy import chess_search
 class Diag():
     def __init__(self):
         self.counts = dict()
-        self.history = []
         self.info = {
             "donePath": None
         }
@@ -30,15 +29,18 @@ class ChessAgent():
     def search(self):
         search_basis = deepcopy(self.game)
         self.diag.info["longestPath"] = 0
-        (ab, move) = self.chess_search.alpha_beta_enh_r(search_basis, self.search_depth, self.search_depth, self.diag)
+
+        (ab, best_path) = self.chess_search.alpha_beta_enh_r(
+            search_basis,
+            self.search_depth,
+            self.search_depth,
+            self.diag
+        )
         print({
             "counts": self.diag.counts,
-            "fen": self.game.to_fen(),
-            "player": "white" if self.game.is_maxer else "black",
-            "donePath": self.diag.info["donePath"],
-            "longestPath": self.diag.info["longestPath"]
+            "donePath": self.diag.info["donePath"]
         })
-        return move
+        return reversed(best_path)
 
     def apply(self, move):
         self.game.apply(move)

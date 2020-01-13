@@ -91,7 +91,7 @@ def test_board_apply_castling():
     move = Move(from_, to_, None, None, None, "-", "K")
     undo = s1.board_apply(move)
     assert undo == expected
-    # board_apply is like a soft apply it shouldn't change anything except positional state
+    # board_apply is like a soft apply it shouldn"t change anything except positional state
     # this is a workaround to make check testing easier for now
     assert s1.active_color == s2.active_color
     assert s1.castling_available == s2.castling_available
@@ -200,3 +200,30 @@ def test_apply_from_check():
     assert back == expected
     s1.undo(back)
     assert_state_eq(s1, s2)
+
+
+def test_apply_undo_stability():
+    states = [
+        "2r3k1/1pq2p1p/p2Q1npb/b3p3/2r1P2B/1BN1R2P/PnP2PP1/3R2K1 b - b6 0 25",
+        "2r3k1/1pq2p1p/p2Q1np1/b3p3/2r1P2B/1BN1b2P/PnP2PP1/3R2K1 w - - 0 26",
+        "2r3k1/1pq2p1p/p2Q1np1/b3p3/2B1P2B/2N1b2P/PnP2PP1/3R2K1 b - - 0 26",
+        "2r3k1/1pq2p1p/p2Q2p1/b3p3/2B1n2B/2N1b2P/PnP2PP1/3R2K1 w - - 0 27",
+    ]
+
+    moves = [
+        Move(from_=(2, 7), to_=(5, 4), victim="R", new_en_passant_target=None, ept_cap=None, new_castling_available=None, castle=None),
+        Move(from_=(5, 1), to_=(4, 2), victim="r", new_en_passant_target=None, ept_cap=None, new_castling_available=None, castle=None),
+        Move(from_=(2, 5), to_=(4, 4), victim="P", new_en_passant_target=None, ept_cap=None, new_castling_available=None, castle=None)
+    ]
+
+    undos = []
+
+    s1 = fen_to_state(states[0])
+
+    for i, m in enumerate(moves):
+        undos.append(s1.apply(m))
+        assert s1.to_fen() == states[i + 1]
+
+    for i, u in enumerate(reversed(undos)):
+        s1.undo(u)
+        assert s1.to_fen() == states[len(states) - 2 - i]

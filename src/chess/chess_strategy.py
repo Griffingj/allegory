@@ -1,15 +1,13 @@
-from src.chess.chess_movement import get_moves
+from itertools import chain
+
+from src.chess.chess_movement import get_moves, targeted_by
 from src.chess.chess_consts import kings, pawns, white, material
-from src.primitive import clamp, highest, lowest
+from src.primitive import clamp, highest, lowest, interleave, BREAK
 from src.search import GameSearch
 
 # Enhancements
-# Static_Exchange_Evaluation https://www.chessprogramming.org/Static_Exchange_Evaluation
-# Quiescence_Search https://www.chessprogramming.org/Quiescence_Search
-#   see https://www.chessprogramming.org/Horizon_Effect
 # Transposition Table https://www.chessprogramming.org/Transposition_Table
 # Killer Heuristic https://www.chessprogramming.org/Killer_Heuristic
-# Last_Best_Reply https://www.chessprogramming.org/Last_Best_Reply
 
 
 def score_end(chess_state):
@@ -19,12 +17,42 @@ def score_end(chess_state):
         return 0
 
 
+def horizon_outcome(chess_state, subject, pos):
+    (attackers, avengers) = targeted_by(chess_state, pos)
+    material_outcome = 0
+
+    if attackers:
+        enemies = sorted(attackers, key=lambda pp: abs(material[pp[1]]))
+        friends = sorted(avengers, key=lambda pp: abs(material[pp[1]]))
+        ordering = interleave(enemies, friends)
+        avengers = list(chain(ordering, [enemies[len(friends)]]) if len(enemies) > len(friends) else ordering)
+        victim = subject
+
+        for i, (_, p) in enumerate(avengers):
+            m1 = material[victim]
+            m2 = material[p]
+            if abs(m1) >= abs(m2) or i == len(avengers) - 1:
+                material_outcome -= m1
+                victim = p
+            else:
+                break
+
+    return material_outcome
+
+
 def score_state(chess_state, last_move):
     if chess_state.is_done:
         return score_end(chess_state)
     else:
-        # TODO make the stability assessment based on tradeoff value instead
-        return chess_state.material_balance
+        piece_moved = chess_state.pos(last_move.to_)
+        penalty = 0
+
+        # If moving a non-king (because king safety was already checked), need to assess a penalty if this
+        # move results in a bad trade
+        if piece_moved not in kings:
+            penalty += horizon_outcome(chess_state, piece_moved, last_move.to_)
+
+        return chess_state.material_balance + penalty
 
 
 def score_move(move, piece):
@@ -49,11 +77,7 @@ def score_move(move, piece):
 
 def next_actions(chess_state):
     moves = get_moves(chess_state)
-
-    def get_key(m):
-        return score_move(m, chess_state.pos(m.from_))
-
-    return sorted(moves, key=get_key)
+    return sorted(moves, key=lambda m: score_move(m, chess_state.pos(m.from_)))
 
 
 def next_actions_debug(chess_state):
@@ -76,8 +100,4 @@ def undo_action(chess_state, back):
     return (chess_state, redo)
 
 
-def is_winning_action(move):
-    return move.victim in kings
-
-
-chess_search = GameSearch(score_state, next_actions, apply_action, undo_action, score_end, is_winning_action)
+chess_search = GameSearch(score_state, next_actions, apply_action, undo_action, score_end)

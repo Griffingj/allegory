@@ -1,19 +1,20 @@
 from src.primitive import BREAK, sign
 
 
-def v2_range(v1, v2):
-    step0 = int(sign(v2[0] - v1[0])) if v2[0] != v1[0] else 0
-    step1 = int(sign(v2[1] - v1[1])) if v2[1] != v1[1] else 0
-    next_ = (v1[0] + step0, v1[1] + step1)
-    while next_ != v2:
+def v2_range(l, r):
+    step_l = int(sign(r[0] - l[0])) if r[0] != l[0] else 0
+    step_r = int(sign(r[1] - l[1])) if r[1] != l[1] else 0
+    next_ = (l[0] + step_l, l[1] + step_r)
+    while next_ != r:
         yield next_
-        n0 = next_[0] + (step0 if next_[0] != v2[0] else 0)
-        n1 = next_[1] + (step1 if next_[1] != v2[1] else 0)
-        next_ = (n0, n1)
+        next_ = (
+            next_[0] + (step_l if next_[0] != r[0] else 0),
+            next_[1] + (step_r if next_[1] != r[1] else 0)
+        )
 
 
-def is_shared_diag(positions):
-    iter_ = iter(positions)
+def is_shared_diag(v2):
+    iter_ = iter(v2)
     left = next(iter_)
     last_sign = None
 
@@ -36,8 +37,8 @@ def is_shared_diag(positions):
         left = right
 
 
-def is_shared_cardinal(positions):
-    iter_ = iter(positions)
+def is_shared_cardinal(v2):
+    iter_ = iter(v2)
     left = next(iter_)
     right = next(iter_)
 
@@ -62,13 +63,17 @@ def is_shared_cardinal(positions):
             return False
 
 
-def difference(v1, v2):
-    return (v1[0] - v2[0], v1[1] - v2[1])
+def is_shared_union_jack(v2):
+    return is_shared_cardinal(v2) or is_shared_diag(v2)
 
 
-def v2_abs(v1):
-    return (abs(v1[0]), abs(v1[1]))
+def difference(l, r):
+    return (l[0] - r[0], l[1] - r[1])
 
 
-def sqr_mag(v1):
-    return v1[0] ** 2 + v1[1] ** 2
+def v2_abs(v2):
+    return (abs(v2[0]), abs(v2[1]))
+
+
+def sqr_mag(v2):
+    return v2[0] ** 2 + v2[1] ** 2

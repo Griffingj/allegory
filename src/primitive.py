@@ -1,3 +1,4 @@
+from itertools import chain
 import functools
 import math
 
@@ -59,3 +60,7 @@ def clamp(l, v, h=highest):
 
 
 sign = functools.partial(math.copysign, 1)
+
+
+def interleave(*iterables):
+    return chain.from_iterable(zip(*iterables))
