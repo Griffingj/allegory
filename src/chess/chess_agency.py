@@ -23,17 +23,16 @@ class ChessAgent():
         self.diag = Diag()
 
     def start_game(self, state=initial_state):
-        self.game = deepcopy(state)
+        self.game = state
         return self.search()
 
     def search(self):
         search_basis = deepcopy(self.game)
-        self.diag.info["longestPath"] = 0
 
         (ab, best_path) = self.chess_search.alpha_beta_enh_r(
             search_basis,
             self.search_depth,
-            self.search_depth,
+            None,
             self.diag
         )
         print({

@@ -24,7 +24,6 @@ if __name__ == "__main__":
     # t1 = time.time() * 1000
 
     fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"  # Starting
-
     fen = "2r3k1/1pq2p1p/p2Q1npb/b3p3/2r1P2B/1BN1R2P/PnP2PP1/3R2K1 b - - 0 25"  # GM game modified minus0major: 5: 2s, 6: 21s
     fen = "2r3k1/1pq2p1p/p4Qp1/4p3/2B1P2B/4b2P/P1P2PP1/3n2K1 b - - 0 25"  # GM game modified minus2major 5: 3s, 6: 9s
     fen = "2r3k1/1p3p1p/p5p1/4p3/4P2B/7P/P1P2PP1/3n2K1 b - - 0 25"  # GM game modified minus6major 5: 0.5s, 8: 30s
