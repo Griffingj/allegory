@@ -5,6 +5,9 @@ import math
 lowest = float("-inf")
 highest = float("inf")
 
+highest = 2 ** 16
+lowest = -(highest - 1)
+
 
 def set_(dictionary, key, val):
     next_ = dictionary
@@ -64,3 +67,8 @@ sign = functools.partial(math.copysign, 1)
 
 def interleave(*iterables):
     return chain.from_iterable(zip(*iterables))
+
+
+def compare(i1, i2):
+    d = i1 - i2
+    return d if d == 0 else sign(d)

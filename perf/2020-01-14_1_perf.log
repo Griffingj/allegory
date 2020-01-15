@@ -1,0 +1,230 @@
+{'leaf': 163623, 'prune': 1696}
+
+Depth
+4
+
+Move Count
+169635
+
+Fen:
+1Q2kb1r/p2n1ppp/4q3/4p1B1/4P3/8/PPP2PPP/2KR4 b - - 0 24
+
+CriticalPath:
+Move(from_=(1, 3), to_=(0, 1), victim='Q', new_en_passant_target=None, ept_cap=None, new_castling_available=None, castle=None)
+Move(from_=(7, 3), to_=(0, 3), victim=None, new_en_passant_target=None, ept_cap=None, new_castling_available=None, castle=None)
+Move(from_=(2, 4), to_=(6, 0), victim='P', new_en_passant_target=None, ept_cap=None, new_castling_available=None, castle=None)
+Move(from_=(0, 3), to_=(0, 4), victim='k', new_en_passant_target=None, ept_cap=None, new_castling_available=None, castle=None)
+         19142110 function calls (18972264 primitive calls) in 8.551 seconds
+
+   Ordered by: internal time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+  1378349    1.374    0.000    3.613    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:76(is_attacked_by)
+   152265    1.024    0.000    4.727    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:136(targeted_by)
+ 169635/1    0.604    0.000    8.598    8.598 /Users/johngriffing/workspace/derp-blue/src/search.py:13(alpha_beta_enh_r)
+   487571    0.587    0.000    0.804    0.000 /Users/johngriffing/workspace/derp-blue/src/vector2.py:16(is_shared_diag)
+     6012    0.408    0.000    0.862    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:170(get_moves)
+  2689386    0.398    0.000    0.398    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:211(pos)
+   152265    0.351    0.000    5.343    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:20(horizon_outcome)
+   521255    0.331    0.000    0.479    0.000 /Users/johngriffing/workspace/derp-blue/src/vector2.py:40(is_shared_cardinal)
+   169634    0.267    0.000    0.614    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:153(apply)
+   447178    0.250    0.000    0.250    0.000 /Users/johngriffing/workspace/derp-blue/src/vector2.py:4(v2_range)
+  1154253    0.234    0.000    0.234    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:72(in_board)
+   169634    0.212    0.000    0.262    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:88(board_apply)
+  2342021    0.194    0.000    0.194    0.000 {built-in method builtins.abs}
+  2281709    0.184    0.000    0.184    0.000 {built-in method builtins.next}
+   169634    0.175    0.000    0.389    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:189(undo)
+   169634    0.166    0.000    0.214    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:139(board_undo)
+   469395    0.163    0.000    0.239    0.000 /Users/johngriffing/workspace/derp-blue/src/vector2.py:74(v2_abs)
+   163623    0.160    0.000    5.534    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:43(score_state)
+   189504    0.140    0.000    0.430    0.000 {built-in method builtins.sorted}
+   508902    0.120    0.000    0.120    0.000 /Users/johngriffing/workspace/derp-blue/src/primitive.py:72(compare)
+   249192    0.117    0.000    0.659    0.000 /Users/johngriffing/workspace/derp-blue/src/vector2.py:66(is_shared_union_jack)
+   469395    0.112    0.000    0.112    0.000 /Users/johngriffing/workspace/derp-blue/src/vector2.py:70(difference)
+  1016183    0.110    0.000    0.110    0.000 {built-in method builtins.iter}
+   219196    0.094    0.000    0.226    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:80(<lambda>)
+   219196    0.078    0.000    0.099    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:58(score_move)
+   388831    0.075    0.000    0.075    0.000 {built-in method __new__ of type object at 0x104ba5b50}
+   165319    0.072    0.000    0.092    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:11(count)
+   169634    0.067    0.000    0.682    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:93(apply_action)
+    13770    0.060    0.000    0.234    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:112(is_attacked)
+    91746    0.055    0.000    0.068    0.000 /Users/johngriffing/workspace/derp-blue/src/primitive.py:68(interleave)
+   354256    0.051    0.000    0.051    0.000 {method 'add' of 'set' objects}
+   219196    0.050    0.000    0.087    0.000 <string>:1(__new__)
+   354235    0.046    0.000    0.046    0.000 {method 'discard' of 'set' objects}
+   434396    0.042    0.000    0.042    0.000 {method 'append' of 'list' objects}
+   138186    0.041    0.000    0.053    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:25(<lambda>)
+   172568    0.030    0.000    0.030    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:85(player_affinity)
+   306290    0.028    0.000    0.028    0.000 {built-in method builtins.len}
+   165737    0.020    0.000    0.020    0.000 {method 'get' of 'dict' objects}
+    91746    0.013    0.000    0.013    0.000 {built-in method from_iterable}
+     7357    0.009    0.000    0.014    0.000 /Users/johngriffing/workspace/derp-blue/src/primitive.py:52(subtract)
+    34177    0.009    0.000    0.011    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:26(<lambda>)
+    17496    0.007    0.000    0.018    0.000 /Users/johngriffing/workspace/derp-blue/src/primitive.py:61(clamp)
+     6012    0.006    0.000    1.147    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:78(next_actions)
+    17496    0.006    0.000    0.006    0.000 {built-in method builtins.min}
+    17496    0.004    0.000    0.004    0.000 {built-in method builtins.max}
+     7357    0.003    0.000    0.003    0.000 /Users/johngriffing/workspace/derp-blue/src/primitive.py:43(fold)
+     2931    0.002    0.000    0.002    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:13(score_end)
+    192/1    0.000    0.000    0.001    0.001 /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:128(deepcopy)
+    21/13    0.000    0.000    0.000    0.000 /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:199(_deepcopy_list)
+       16    0.000    0.000    0.000    0.000 {built-in method builtins.print}
+        1    0.000    0.000    0.000    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:228(fen_to_state)
+      286    0.000    0.000    0.000    0.000 {built-in method builtins.id}
+       21    0.000    0.000    0.000    0.000 /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:208(_deepcopy_tuple)
+     13/1    0.000    0.000    0.001    0.001 /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:257(_reconstruct)
+       36    0.000    0.000    0.000    0.000 /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:241(_keep_alive)
+        1    0.000    0.000    8.598    8.598 /Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:25(search)
+      2/1    0.000    0.000    0.001    0.001 /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:225(_deepcopy_dict)
+       21    0.000    0.000    0.000    0.000 /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:209(<listcomp>)
+        4    0.000    0.000    0.000    0.000 /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/collections/__init__.py:419(__repr__)
+      135    0.000    0.000    0.000    0.000 /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:182(_deepcopy_atomic)
+       13    0.000    0.000    0.000    0.000 {method '__reduce_ex__' of 'object' objects}
+        1    0.000    0.000    0.000    0.000 /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copyreg.py:90(__newobj__)
+       26    0.000    0.000    0.000    0.000 /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:262(<genexpr>)
+        1    0.000    0.000    0.000    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:216(calc_material_balance)
+        1    0.000    0.000    8.598    8.598 /Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:21(start_game)
+       26    0.000    0.000    0.000    0.000 {built-in method builtins.getattr}
+        1    0.000    0.000    0.000    0.000 /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copyreg.py:99(_slotnames)
+       14    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+       13    0.000    0.000    0.000    0.000 {built-in method builtins.issubclass}
+        2    0.000    0.000    0.000    0.000 {built-in method builtins.hasattr}
+        2    0.000    0.000    0.000    0.000 {method 'split' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:16(__init__)
+        1    0.000    0.000    0.000    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:31(__init__)
+        1    0.000    0.000    0.000    0.000 {method 'update' of 'dict' objects}
+        1    0.000    0.000    0.000    0.000 /Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:8(__init__)
+        1    0.000    0.000    0.000    0.000 {method 'get' of 'mappingproxy' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        2    0.000    0.000    0.000    0.000 {method 'items' of 'dict' objects}
+
+
+   Ordered by: internal time
+
+Function                                                                                          was called by...
+                                                                                                      ncalls  tottime  cumtime
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:76(is_attacked_by)            <-   55322    0.062    0.164  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:112(is_attacked)
+                                                                                                     1323027    1.312    3.449  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:136(targeted_by)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:136(targeted_by)              <-  152265    1.024    4.727  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:20(horizon_outcome)
+/Users/johngriffing/workspace/derp-blue/src/search.py:13(alpha_beta_enh_r)                        <-       1    0.000    8.598  /Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:25(search)
+                                                                                                   169634/32    0.604    8.597  /Users/johngriffing/workspace/derp-blue/src/search.py:13(alpha_beta_enh_r)
+/Users/johngriffing/workspace/derp-blue/src/vector2.py:16(is_shared_diag)                         <-  283876    0.356    0.488  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:76(is_attacked_by)
+                                                                                                      203695    0.231    0.316  /Users/johngriffing/workspace/derp-blue/src/vector2.py:66(is_shared_union_jack)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:170(get_moves)                <-    6012    0.408    0.862  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:78(next_actions)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:211(pos)                         <- 1652527    0.239    0.239  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:76(is_attacked_by)
+                                                                                                       27476    0.005    0.005  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:112(is_attacked)
+                                                                                                      629495    0.094    0.094  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:136(targeted_by)
+                                                                                                      160692    0.029    0.029  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:43(score_state)
+                                                                                                      219196    0.033    0.033  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:80(<lambda>)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:20(horizon_outcome)           <-  152265    0.351    5.343  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:43(score_state)
+/Users/johngriffing/workspace/derp-blue/src/vector2.py:40(is_shared_cardinal)                     <-  272063    0.175    0.252  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:76(is_attacked_by)
+                                                                                                      249192    0.156    0.226  /Users/johngriffing/workspace/derp-blue/src/vector2.py:66(is_shared_union_jack)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:153(apply)                       <-  169634    0.267    0.614  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:93(apply_action)
+/Users/johngriffing/workspace/derp-blue/src/vector2.py:4(v2_range)                                <-  447178    0.250    0.250  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:76(is_attacked_by)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:72(in_board)                  <-   27540    0.006    0.006  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:112(is_attacked)
+                                                                                                      609060    0.138    0.138  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:136(targeted_by)
+                                                                                                      517653    0.090    0.090  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:170(get_moves)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:88(board_apply)                  <-  169634    0.212    0.262  /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:153(apply)
+{built-in method builtins.abs}                                                                    <-  220734    0.019    0.019  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:20(horizon_outcome)
+                                                                                                      138186    0.012    0.012  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:25(<lambda>)
+                                                                                                       34177    0.003    0.003  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:26(<lambda>)
+                                                                                                       34992    0.003    0.003  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:58(score_move)
+                                                                                                      975142    0.081    0.081  /Users/johngriffing/workspace/derp-blue/src/vector2.py:16(is_shared_diag)
+                                                                                                      938790    0.076    0.076  /Users/johngriffing/workspace/derp-blue/src/vector2.py:74(v2_abs)
+{built-in method builtins.next}                                                                   <-   83700    0.008    0.008  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:170(get_moves)
+                                                                                                        7357    0.001    0.001  /Users/johngriffing/workspace/derp-blue/src/primitive.py:43(fold)
+                                                                                                     1056120    0.084    0.084  /Users/johngriffing/workspace/derp-blue/src/vector2.py:16(is_shared_diag)
+                                                                                                     1134532    0.092    0.092  /Users/johngriffing/workspace/derp-blue/src/vector2.py:40(is_shared_cardinal)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:189(undo)                        <-  169634    0.175    0.389  /Users/johngriffing/workspace/derp-blue/src/search.py:13(alpha_beta_enh_r)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:139(board_undo)                  <-  169634    0.166    0.214  /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:189(undo)
+/Users/johngriffing/workspace/derp-blue/src/vector2.py:74(v2_abs)                                 <-  469395    0.163    0.239  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:76(is_attacked_by)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:43(score_state)               <-  163623    0.160    5.534  /Users/johngriffing/workspace/derp-blue/src/search.py:13(alpha_beta_enh_r)
+{built-in method builtins.sorted}                                                                 <-  183492    0.086    0.150  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:20(horizon_outcome)
+                                                                                                        6012    0.054    0.279  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:78(next_actions)
+/Users/johngriffing/workspace/derp-blue/src/primitive.py:72(compare)                              <-  508902    0.120    0.120  /Users/johngriffing/workspace/derp-blue/src/search.py:13(alpha_beta_enh_r)
+/Users/johngriffing/workspace/derp-blue/src/vector2.py:66(is_shared_union_jack)                   <-  249192    0.117    0.659  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:76(is_attacked_by)
+/Users/johngriffing/workspace/derp-blue/src/vector2.py:70(difference)                             <-  469395    0.112    0.112  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:76(is_attacked_by)
+{built-in method builtins.iter}                                                                   <-    7357    0.001    0.001  /Users/johngriffing/workspace/derp-blue/src/primitive.py:52(subtract)
+                                                                                                      487571    0.053    0.053  /Users/johngriffing/workspace/derp-blue/src/vector2.py:16(is_shared_diag)
+                                                                                                      521255    0.056    0.056  /Users/johngriffing/workspace/derp-blue/src/vector2.py:40(is_shared_cardinal)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:80(<lambda>)                  <-  219196    0.094    0.226  {built-in method builtins.sorted}
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:58(score_move)                <-  219196    0.078    0.099  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:80(<lambda>)
+{built-in method __new__ of type object at 0x104ba5b50}                                           <-       1    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copyreg.py:90(__newobj__)
+                                                                                                      388830    0.075    0.075  <string>:1(__new__)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:11(count)                       <-  165319    0.072    0.092  /Users/johngriffing/workspace/derp-blue/src/search.py:13(alpha_beta_enh_r)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:93(apply_action)              <-  169634    0.067    0.682  /Users/johngriffing/workspace/derp-blue/src/search.py:13(alpha_beta_enh_r)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:112(is_attacked)              <-   13770    0.060    0.234  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:170(get_moves)
+/Users/johngriffing/workspace/derp-blue/src/primitive.py:68(interleave)                           <-   91746    0.055    0.068  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:20(horizon_outcome)
+{method 'add' of 'set' objects}                                                                   <-  169634    0.024    0.024  /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:88(board_apply)
+                                                                                                      184601    0.027    0.027  /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:139(board_undo)
+                                                                                                          21    0.000    0.000  /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:228(fen_to_state)
+<string>:1(__new__)                                                                               <-  219196    0.050    0.087  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:170(get_moves)
+{method 'discard' of 'set' objects}                                                               <-  184601    0.026    0.026  /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:88(board_apply)
+                                                                                                      169634    0.021    0.021  /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:139(board_undo)
+{method 'append' of 'list' objects}                                                               <-  208220    0.023    0.023  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:136(targeted_by)
+                                                                                                      219196    0.018    0.018  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:170(get_moves)
+                                                                                                          72    0.000    0.000  /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:228(fen_to_state)
+                                                                                                        6780    0.001    0.001  /Users/johngriffing/workspace/derp-blue/src/search.py:13(alpha_beta_enh_r)
+                                                                                                          93    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:199(_deepcopy_list)
+                                                                                                          35    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:241(_keep_alive)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:25(<lambda>)                  <-  138186    0.041    0.053  {built-in method builtins.sorted}
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:85(player_affinity)              <-    2931    0.000    0.000  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:13(score_end)
+                                                                                                      169637    0.029    0.029  /Users/johngriffing/workspace/derp-blue/src/search.py:13(alpha_beta_enh_r)
+{built-in method builtins.len}                                                                    <-   13369    0.002    0.002  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:170(get_moves)
+                                                                                                          21    0.000    0.000  /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:228(fen_to_state)
+                                                                                                      292900    0.027    0.027  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:20(horizon_outcome)
+{method 'get' of 'dict' objects}                                                                  <-  165319    0.020    0.020  /Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:11(count)
+                                                                                                          21    0.000    0.000  /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:228(fen_to_state)
+                                                                                                         397    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:128(deepcopy)
+{built-in method from_iterable}                                                                   <-   91746    0.013    0.013  /Users/johngriffing/workspace/derp-blue/src/primitive.py:68(interleave)
+/Users/johngriffing/workspace/derp-blue/src/primitive.py:52(subtract)                             <-    7357    0.009    0.014  /Users/johngriffing/workspace/derp-blue/src/chess/chess_movement.py:170(get_moves)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:26(<lambda>)                  <-   34177    0.009    0.011  {built-in method builtins.sorted}
+/Users/johngriffing/workspace/derp-blue/src/primitive.py:61(clamp)                                <-   17496    0.007    0.018  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:58(score_move)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:78(next_actions)              <-    6012    0.006    1.147  /Users/johngriffing/workspace/derp-blue/src/search.py:13(alpha_beta_enh_r)
+{built-in method builtins.min}                                                                    <-   17496    0.006    0.006  /Users/johngriffing/workspace/derp-blue/src/primitive.py:61(clamp)
+{built-in method builtins.max}                                                                    <-   17496    0.004    0.004  /Users/johngriffing/workspace/derp-blue/src/primitive.py:61(clamp)
+/Users/johngriffing/workspace/derp-blue/src/primitive.py:43(fold)                                 <-    7357    0.003    0.003  /Users/johngriffing/workspace/derp-blue/src/primitive.py:52(subtract)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:13(score_end)                 <-    2931    0.002    0.002  /Users/johngriffing/workspace/derp-blue/src/chess/chess_strategy.py:43(score_state)
+/Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:128(deepcopy)                  <-       1    0.000    0.001  /Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:25(search)
+                                                                                                       93/29    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:199(_deepcopy_list)
+                                                                                                          42    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:209(<listcomp>)
+                                                                                                       42/18    0.000    0.001  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:225(_deepcopy_dict)
+                                                                                                           1    0.000    0.001  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:257(_reconstruct)
+                                                                                                          13    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:262(<genexpr>)
+/Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:199(_deepcopy_list)            <-   21/13    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:128(deepcopy)
+{built-in method builtins.print}                                                                  <-       1    0.000    0.000  /Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:25(search)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:228(fen_to_state)                <-
+{built-in method builtins.id}                                                                     <-     192    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:128(deepcopy)
+                                                                                                          21    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:199(_deepcopy_list)
+                                                                                                          21    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:208(_deepcopy_tuple)
+                                                                                                           2    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:225(_deepcopy_dict)
+                                                                                                          37    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:241(_keep_alive)
+                                                                                                          13    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:257(_reconstruct)
+/Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:208(_deepcopy_tuple)           <-      21    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:128(deepcopy)
+/Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:257(_reconstruct)              <-    13/1    0.000    0.001  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:128(deepcopy)
+/Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:241(_keep_alive)               <-      36    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:128(deepcopy)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:25(search)                      <-       1    0.000    8.598  /Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:21(start_game)
+/Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:225(_deepcopy_dict)            <-     2/1    0.000    0.001  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:128(deepcopy)
+/Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:209(<listcomp>)                <-      21    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:208(_deepcopy_tuple)
+/Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/collections/__init__.py:419(__repr__)  <-       4    0.000    0.000  {built-in method builtins.print}
+/Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:182(_deepcopy_atomic)          <-     135    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:128(deepcopy)
+{method '__reduce_ex__' of 'object' objects}                                                      <-      13    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:128(deepcopy)
+/Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copyreg.py:90(__newobj__)              <-       1    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:257(_reconstruct)
+/Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:262(<genexpr>)                 <-      26    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:257(_reconstruct)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:216(calc_material_balance)       <-       1    0.000    0.000  /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:228(fen_to_state)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:21(start_game)                  <-
+{built-in method builtins.getattr}                                                                <-      26    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:128(deepcopy)
+/Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copyreg.py:99(_slotnames)              <-       1    0.000    0.000  {method '__reduce_ex__' of 'object' objects}
+{built-in method builtins.isinstance}                                                             <-      13    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:128(deepcopy)
+                                                                                                           1    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:257(_reconstruct)
+{built-in method builtins.issubclass}                                                             <-      13    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:128(deepcopy)
+{built-in method builtins.hasattr}                                                                <-       1    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:257(_reconstruct)
+                                                                                                           1    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copyreg.py:99(_slotnames)
+{method 'split' of 'str' objects}                                                                 <-       2    0.000    0.000  /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:228(fen_to_state)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:16(__init__)                    <-
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:31(__init__)                     <-       1    0.000    0.000  /Users/johngriffing/workspace/derp-blue/src/chess/chess_state.py:228(fen_to_state)
+{method 'update' of 'dict' objects}                                                               <-       1    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:257(_reconstruct)
+/Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:8(__init__)                     <-       1    0.000    0.000  /Users/johngriffing/workspace/derp-blue/src/chess/chess_agency.py:16(__init__)
+{method 'get' of 'mappingproxy' objects}                                                          <-       1    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copyreg.py:99(_slotnames)
+{method 'disable' of '_lsprof.Profiler' objects}                                                  <-
+{method 'items' of 'dict' objects}                                                                <-       2    0.000    0.000  /Users/johngriffing/workspace/derp-blue/venv/lib/python3.8/copy.py:225(_deepcopy_dict)

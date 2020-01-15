@@ -1,4 +1,88 @@
-from src.search import minimax, alpha_beta_basic, GameSearch
+from src.primitive import lowest, highest
+from src.search import GameSearch
+
+
+def minimax(game_state, next_actions, score_state, apply_action, search_depth, maxer=True):
+    if search_depth == 0 or game_state.is_done:
+        return score_state(game_state)
+    else:
+        scores = [lowest if maxer else highest]
+
+        for action in next_actions(game_state):
+            (new_state, undo) = apply_action(game_state, action)
+            next_score = minimax(
+                new_state,
+                next_actions,
+                score_state,
+                apply_action,
+                search_depth - 1,
+                not maxer
+            )
+            scores.append(next_score)
+
+        return max(scores) if maxer else min(scores)
+
+
+def alpha_beta_basic(
+        game_state,
+        next_actions,
+        score_state,
+        apply_action,
+        scan_depth,
+        max_prior_best=(lowest, None),
+        min_prior_best=(highest, None)):
+
+    if scan_depth == 0 or game_state.is_done:
+        return (score_state(game_state), None)
+    else:
+        if game_state.is_maxer:
+            max_best = (lowest, None)
+
+            for action in next_actions(game_state):
+                (new_state, undo) = apply_action(game_state, action)
+                alpha_meta = max_best if max_best[0] > max_prior_best[0] else max_prior_best
+
+                (next_score, pos) = alpha_beta_basic(
+                    new_state,
+                    next_actions,
+                    score_state,
+                    apply_action,
+                    scan_depth - 1,
+                    alpha_meta,
+                    min_prior_best
+                )
+                if next_score > max_best[0]:
+                    max_best = (next_score, action)
+
+                if min_prior_best[0] <= max_best[0]:
+                    # Avoiding searching (pruning) the rest of the moves and their descendents
+                    # because max_best is higher than miner's prior best option. Don't have to look
+                    # further if this is the case because on a prior move, miner will prefer
+                    # lower alternative
+                    return max_best
+            return max_best
+        else:
+            min_best = (highest, None)
+
+            for action in next_actions(game_state):
+                (new_state, undo) = apply_action(game_state, action)
+                beta_meta = min_best if min_best[0] < min_prior_best[0] else min_prior_best
+
+                (next_score, pos) = alpha_beta_basic(
+                    new_state,
+                    next_actions,
+                    score_state,
+                    apply_action,
+                    scan_depth - 1,
+                    max_prior_best,
+                    beta_meta
+                )
+                if next_score < min_best[0]:
+                    min_best = (next_score, action)
+
+                if max_prior_best[0] >= min_best[0]:
+                    return min_best
+            return min_best
 
 
 class Node():

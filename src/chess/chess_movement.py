@@ -242,9 +242,7 @@ def get_moves(chess_state):
                         if victim not in friendly_pieces:
                             if piece in kings:
                                 # Castle invalidation if king moves
-                                # Need to check this to ensure draw checks work
-                                if not is_attacked(chess_state, to):
-                                    moves.append(Move(from_, to, victim, None, None, ca_to))
+                                moves.append(Move(from_, to, victim, None, None, ca_to))
                             else:
                                 moves.append(Move(from_, to, victim))
 

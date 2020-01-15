@@ -12,7 +12,7 @@ from src.search import GameSearch
 
 def score_end(chess_state):
     if chess_state.is_done:
-        return lowest if chess_state.active_color is white else highest
+        return chess_state.player_affinity() + (lowest if chess_state.active_color is white else highest)
     else:
         return 0
 
