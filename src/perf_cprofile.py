@@ -28,6 +28,8 @@ if __name__ == "__main__":
     fen = "2r3k1/1p3p1p/p5p1/4p3/4P2B/7P/P1P2PP1/3n2K1 b - - 0 25"  # GM game modified minus6major 5: 0.5s, 8: 30s
     fen = "2r3k1/1pq2p1p/p4Qp1/4p3/4P2B/7P/P1P2PP1/3n2K1 b - - 0 25"  # GM game modified minus4major 5: 2s, 6: 10s
     fen = "2r3k1/1pq2p1p/p2Q1npb/b3p3/2r1P2B/1BN1R2P/PnP2PP1/3R2K1 b - - 0 25"  # GM game modified minus0major: 5: 2s, 6: 21s
+    fen = "r1b3kr/6pp/p1n1pp2/1pBQ2N1/4BP2/1P1P4/Pq4PP/5RK1 b - - 0 25"  # IM eric rosen youtube https://youtu.be/XqNlxdpRmp0
+    fen = "r1b3kr/6pp/p1n1pp2/1pB5/2Q1BP2/1P1P1N2/Pq4PP/5RK1 w - - 0 25"  # IM double sac eric rosen youtube https://youtu.be/XqNlxdpRmp0
 
     # fen = "4k3/8/8/8/4q3/3P4/8/4K3 w - - 0 50"
     # fen = "2r3k1/1pq2p1p/p2Q1np1/4p3/2r1P3/2N1R2P/P1P2PP1/3R2K1 b - - 0 25"  # GM game
@@ -57,7 +59,7 @@ if __name__ == "__main__":
         # .sort_stats(SortKey.CUMULATIVE)
 
     ps.print_stats()
-    ps.print_callers()
+    # ps.print_callers()
     print(s.getvalue())
 
     # print(time.time() * 1000 - t1)

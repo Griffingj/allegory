@@ -1,6 +1,7 @@
 from src.primitive import highest, lowest, compare
 from src.chess.chess_movement import Move
 
+
 class GameSearch():
     def __init__(self, score_state, next_actions, apply_action, undo_action, score_end):
         self.score_state = score_state
