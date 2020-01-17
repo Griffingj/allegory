@@ -22,7 +22,6 @@ white_pinners = set("QRB")
 black_pinners = set("qrb")
 pinners = white_pinners | black_pinners
 
-# bounds checking for coords
 b_range = set(range(0, 8))
 
 # for chess "algebraic notation"

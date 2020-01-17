@@ -1,44 +1,44 @@
-from src.chess.chess_strategy import next_actions, score_move
-from src.chess.chess_state import fen_to_state
-from src.chess.chess_movement import Move
+from src.python.chess.chess_strategy import next_actions, ranking_score
+from src.python.chess.chess_state import fen_to_state
+from src.python.chess.chess_movement import Move
 
 
-def test_score_move():
+def test_ranking_score():
     m1 = Move(
         from_=(2, 4), to_=(1, 3), victim=None, new_en_passant_target=None, ept_cap=((1, 3), 'p'),
         new_castling_available=None, castle=None
     )
-    assert score_move(m1, "P") == -1120.0
+    assert ranking_score(m1, "P") == -1120.0
 
     m2 = Move(
         from_=(6, 4), to_=(5, 3), victim='p', new_en_passant_target=None, ept_cap=None,
         new_castling_available=None, castle=None
     )
-    assert score_move(m2, "P") == -1120.0
+    assert ranking_score(m2, "P") == -1120.0
 
     m3 = Move(
         from_=(7, 4), to_=(7, 6), victim=None, new_en_passant_target=None, ept_cap=None,
         new_castling_available='-', castle='K'
     )
-    assert score_move(m3, "K") == -990.0
+    assert ranking_score(m3, "K") == -990.0
 
     m4 = Move(
         from_=(6, 4), to_=(5, 3), victim='q', new_en_passant_target=None, ept_cap=None,
         new_castling_available=None, castle=None
     )
-    assert score_move(m4, "P") == -1300.0
+    assert ranking_score(m4, "P") == -1300.0
 
     m5 = Move(
         from_=(7, 4), to_=(7, 5), victim=None, new_en_passant_target=None, ept_cap=None,
         new_castling_available='-', castle=None
     )
-    assert score_move(m5, "K") == -90.0
+    assert ranking_score(m5, "K") == -90.0
 
     m6 = Move(
         from_=(7, 5), to_=(7, 4), victim='q', new_en_passant_target=None, ept_cap=None,
         new_castling_available='-', castle=None
     )
-    assert score_move(m6, "K") == -1008.0
+    assert ranking_score(m6, "K") == -1008.0
 
 
 def test_next_actions():

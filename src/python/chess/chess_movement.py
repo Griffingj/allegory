@@ -1,13 +1,13 @@
 from itertools import cycle
 from collections import namedtuple
 
-from src.chess.chess_consts import b_range, black_pieces, white_pieces, pawns, knights, bishops, rooks, queens, kings,\
-    white, white_castling, black_castling, castling_block, castling_check, castling_rooks, white_pinners,\
+from src.python.chess.chess_consts import b_range, black_pieces, white_pieces, pawns, knights, bishops, rooks, queens,\
+    kings, white, white_castling, black_castling, castling_block, castling_check, castling_rooks, white_pinners,\
     black_pinners, pinners, not_pawns
 
-from src.primitive import subtract, intersect
+from src.python.primitive import subtract, intersect
 
-from src.vector2 import is_shared_cardinal, is_shared_diag, is_shared_union_jack, v2_range, difference, v2_abs
+from src.python.vector2 import is_shared_cardinal, is_shared_diag, is_shared_union_jack, v2_range, difference, v2_abs
 
 # all 2d coords are in (y, x) form where positive y is down (from white's perspective),
 # this is to ease working with 2d array board representation
@@ -81,8 +81,7 @@ def is_attacked_by(chess_state, pos, attacker_pos, enemies_only=True, ignored=em
 
     if enemies_only and attacker in friends:
         return False
-
-    if attacker is None or pos == attacker_pos:
+    elif attacker is None or pos == attacker_pos:
         return False
     elif attacker in pawns:
         diff = difference(pos, attacker_pos)
@@ -212,9 +211,8 @@ def get_moves(chess_state):
                 # Attacks
                 for left_right in dir_left_right:
                     j_tar = j + 1 * left_right
-
-                    if j_tar in b_range:
-                        to = (i_tar, j_tar)
+                    to = (i_tar, j_tar)
+                    if in_board(to):
                         victim = chess_state.board[i_tar][j_tar]
 
                         if to == chess_state.en_passant_target:
@@ -271,7 +269,7 @@ def get_moves(chess_state):
                         if cont:
                             continue
 
-                        new_ca = subtract(ca, color_castling)
+                        new_ca = subtract(chess_state.castling_available, color_castling)
                         to = None
 
                         if k == "K":

@@ -1,7 +1,7 @@
 from collections import namedtuple
 
-from src.chess.chess_consts import b_range, white, black, castling_rooks, material, pieces,\
-    initial_fen, ranks, files, kings
+from src.python.chess.chess_consts import b_range, white, black, castling_rooks, material, pieces,\
+    initial_fen, ranks, files, kings, pawns
 
 empty_set = set()
 
@@ -89,19 +89,27 @@ class ChessState():
         (f_y, f_x) = move.from_
         (t_y, t_x) = move.to_
         piece = self.board[f_y][f_x]
+        promotion_rank = 0 if self.active_color == white else 7
+        promotion = piece in pawns and t_y == promotion_rank
+        queen = "Q" if self.active_color == white else "q"
+        to_piece = queen if promotion else piece
 
         undos = [
-            (move.from_, move.to_, piece),
-            (move.to_, None, move.victim),
+            (move.from_, move.to_, to_piece)
         ]
 
+        if move.victim is not None:
+            undos.append((move.to_, None, move.victim))
+        else:
+            undos.append((move.to_, None, None))
+
         self.positions[piece].discard(move.from_)
-        self.positions[piece].add(move.to_)
+        self.positions[to_piece].add(move.to_)
 
         if move.victim is not None:
             self.positions[move.victim].discard(move.to_)
 
-        self.board[t_y][t_x] = piece
+        self.board[t_y][t_x] = to_piece
         self.board[f_y][f_x] = None
 
         if move.ept_cap is not None:
@@ -144,9 +152,7 @@ class ChessState():
 
             if piece is not None:
                 self.positions[piece].add(from_)
-
-                if to is not None:
-                    self.positions[piece].discard(to)
+                self.positions[piece].discard(to)
 
         return self
 
@@ -174,8 +180,6 @@ class ChessState():
         self.move += 1 if self.active_color == black else 0
 
         undo_board = self.board_apply(move)
-
-        # Color change affects subject in "is_attacked" etc
         self.active_color = black if self.active_color == white else white
 
         return Undo(

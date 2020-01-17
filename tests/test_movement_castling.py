@@ -1,7 +1,7 @@
 from copy import deepcopy
 
-from src.chess.chess_state import fen_to_state
-from src.chess.chess_movement import get_moves, Move
+from src.python.chess.chess_state import fen_to_state
+from src.python.chess.chess_movement import get_moves, Move
 
 king_castle = Move(
     from_=(7, 4), to_=(7, 6), victim=None, new_en_passant_target=None, ept_cap=None,
@@ -91,5 +91,31 @@ def test_castling_attacked_castle_space():
         Move(
             from_=(7, 4), to_=(7, 6), victim=None, new_en_passant_target=None, ept_cap=None,
             new_castling_available='-', castle='K'
+        )
+    ]).issubset(get_moves(s1))
+
+
+def test_castling_removes_availability():
+    s1 = fen_to_state("r3k2r/p6p/8/8/8/8/P6P/R3K2R w KQkq - 0 50")
+    assert set([
+        Move(
+            from_=(7, 4), to_=(7, 2), victim=None, new_en_passant_target=None, ept_cap=None,
+            new_castling_available='kq', castle='Q'
+        ),
+        Move(
+            from_=(7, 4), to_=(7, 6), victim=None, new_en_passant_target=None, ept_cap=None,
+            new_castling_available='kq', castle='K'
+        )
+    ]).issubset(get_moves(s1))
+
+    s1 = fen_to_state("r3k2r/p6p/8/8/8/8/P6P/R3K2R b KQkq - 0 50")
+    assert set([
+        Move(
+            from_=(0, 4), to_=(0, 2), victim=None, new_en_passant_target=None, ept_cap=None,
+            new_castling_available='KQ', castle='q'
+        ),
+        Move(
+            from_=(0, 4), to_=(0, 6), victim=None, new_en_passant_target=None, ept_cap=None,
+            new_castling_available='KQ', castle='k'
         )
     ]).issubset(get_moves(s1))

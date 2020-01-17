@@ -1,5 +1,5 @@
-from src.chess.chess_state import fen_to_state
-from src.chess.chess_movement import get_moves, Move
+from src.python.chess.chess_state import fen_to_state
+from src.python.chess.chess_movement import get_moves, Move
 
 
 def test_pawn_move_basics():

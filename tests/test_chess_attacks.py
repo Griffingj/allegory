@@ -1,5 +1,5 @@
-from src.chess.chess_state import fen_to_state
-from src.chess.chess_movement import is_attacked_by, is_attacked, targeted_by
+from src.python.chess.chess_state import fen_to_state
+from src.python.chess.chess_movement import is_attacked_by, is_attacked, targeted_by
 
 
 def test_is_attacked_by():

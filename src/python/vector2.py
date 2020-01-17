@@ -1,4 +1,4 @@
-from src.primitive import BREAK, sign
+from src.python.primitive import BREAK, sign
 
 
 def v2_range(l, r):

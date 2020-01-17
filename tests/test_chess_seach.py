@@ -1,8 +1,8 @@
-from src.chess.chess_movement import Move
-from src.chess.chess_consts import material
-from src.chess.chess_state import fen_to_state
-from src.chess.chess_strategy import score_end, score_state, next_actions, horizon_outcome
-from src.primitive import lowest, highest
+from src.python.chess.chess_movement import Move
+from src.python.chess.chess_consts import material
+from src.python.chess.chess_state import fen_to_state
+from src.python.chess.chess_strategy import score_end, score_state, horizon_outcome
+from src.python.primitive import lowest, highest
 
 
 def test_score_end_check_mate_white():

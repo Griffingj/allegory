@@ -2,3 +2,6 @@
 .vscode/
 __pycache__/
 venv/
+target/release/*
+!target/release/libderp_blue.dylib
+!target/release/libderp_blue.d

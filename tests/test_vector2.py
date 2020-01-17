@@ -1,4 +1,4 @@
-from src.vector2 import is_shared_cardinal, is_shared_diag, difference, v2_abs, v2_range
+from src.python.vector2 import is_shared_cardinal, is_shared_diag, difference, v2_abs, v2_range
 
 
 def test_is_shared_diag():

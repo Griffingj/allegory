@@ -1,7 +1,7 @@
 from copy import deepcopy
 
-from src.chess.chess_state import initial_state
-from src.chess.chess_strategy import chess_search
+from src.python.chess.chess_state import initial_state
+from src.python.chess.chess_strategy import chess_search
 
 
 class Diag():

@@ -1,8 +1,8 @@
 from copy import deepcopy
 
-from src.chess.chess_consts import initial_fen
-from src.chess.chess_state import fen_to_state, Undo
-from src.chess.chess_movement import Move
+from src.python.chess.chess_consts import initial_fen
+from src.python.chess.chess_state import fen_to_state, Undo
+from src.python.chess.chess_movement import Move
 
 
 def test_fen_to_initial_state():
@@ -211,9 +211,36 @@ def test_apply_undo_stability():
     ]
 
     moves = [
-        Move(from_=(2, 7), to_=(5, 4), victim="R", new_en_passant_target=None, ept_cap=None, new_castling_available=None, castle=None),
-        Move(from_=(5, 1), to_=(4, 2), victim="r", new_en_passant_target=None, ept_cap=None, new_castling_available=None, castle=None),
-        Move(from_=(2, 5), to_=(4, 4), victim="P", new_en_passant_target=None, ept_cap=None, new_castling_available=None, castle=None)
+        Move(from_=(2, 7), to_=(5, 4), victim="R"),
+        Move(from_=(5, 1), to_=(4, 2), victim="r"),
+        Move(from_=(2, 5), to_=(4, 4), victim="P")
+    ]
+
+    undos = []
+
+    s1 = fen_to_state(states[0])
+
+    for i, m in enumerate(moves):
+        undos.append(s1.apply(m))
+        assert s1.to_fen() == states[i + 1]
+
+    for i, u in enumerate(reversed(undos)):
+        s1.undo(u)
+        assert s1.to_fen() == states[len(states) - 2 - i]
+
+
+def test_apply_undo_stability_castling():
+    states = [
+        "r3k2r/p6p/1p6/8/8/8/P6P/R3K2R w KQkq b6 0 25",
+        "r3k2r/p6p/1p6/8/8/8/P6P/R4RK1 b kq - 0 25",
+        "2kr3r/p6p/1p6/8/8/8/P6P/R4RK1 w - - 0 26",
+        "2kr3r/p6p/1p6/8/8/8/P5KP/R4R2 b - - 0 26",
+    ]
+
+    moves = [
+        Move(from_=(7, 4), to_=(7, 6), new_castling_available='kq', castle='K'),
+        Move(from_=(0, 4), to_=(0, 2), new_castling_available='-', castle='q'),
+        Move(from_=(7, 6), to_=(6, 6))
     ]
 
     undos = []

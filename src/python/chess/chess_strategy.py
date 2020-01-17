@@ -1,13 +1,9 @@
 from itertools import chain
 
-from src.chess.chess_movement import get_moves, targeted_by
-from src.chess.chess_consts import kings, pawns, white, material
-from src.primitive import clamp, highest, lowest, interleave, BREAK
-from src.search import GameSearch
-
-# Enhancements
-# Transposition Table https://www.chessprogramming.org/Transposition_Table
-# Killer Heuristic https://www.chessprogramming.org/Killer_Heuristic
+from src.python.chess.chess_movement import get_moves, targeted_by
+from src.python.chess.chess_consts import kings, pawns, white, material
+from src.python.primitive import clamp, highest, lowest, interleave
+from src.python.search import GameSearch
 
 
 def score_end(chess_state):
@@ -18,6 +14,8 @@ def score_end(chess_state):
 
 
 def horizon_outcome(chess_state, subject, pos):
+    # At the leaf nodes need to assess if the position landed on is a good trade outcome if it's under attack,
+    # this is my attempt to handle "The Horizon Effect"
     (attackers, avengers) = targeted_by(chess_state, pos)
     material_outcome = 0
 
@@ -41,6 +39,7 @@ def horizon_outcome(chess_state, subject, pos):
 
 
 def score_state(chess_state, last_move):
+    # "Evaluation" assess the balance of a position
     if chess_state.is_done:
         return score_end(chess_state)
     else:
@@ -55,7 +54,9 @@ def score_state(chess_state, last_move):
         return chess_state.material_balance + penalty
 
 
-def score_move(move, piece):
+def ranking_score(move, piece):
+    # This is used to guess at what a good move looks like, the better the guess the more likely to produce
+    # an alphaBeta prune
     bonus_co = 11
     penalty_co = 0.9
 
@@ -77,14 +78,14 @@ def score_move(move, piece):
 
 def next_actions(chess_state):
     moves = get_moves(chess_state)
-    return sorted(moves, key=lambda m: score_move(m, chess_state.pos(m.from_)))
+    return sorted(moves, key=lambda m: ranking_score(m, chess_state.pos(m.from_)))
 
 
 def next_actions_debug(chess_state):
     debug = []
 
     for m in get_moves(chess_state):
-        score = score_move(m, chess_state.pos(m.from_))
+        score = ranking_score(m, chess_state.pos(m.from_))
         debug.append((score, m))
 
     return debug

@@ -3,7 +3,7 @@ import timeit
 if __name__ == "__main__":
     # code snippet to be executed only once
     mysetup = '''
-from src.primitive import sign
+from src.python.primitive import sign
 import math
 
 BREAK = object()

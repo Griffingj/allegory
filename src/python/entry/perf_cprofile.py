@@ -2,19 +2,11 @@ import cProfile
 import pstats
 import io
 from pstats import SortKey
-import time;
+# import time
 
-from src.chess.chess_state import fen_to_state
-from src.chess.chess_agency import ChessAgent
-from src.chess.chess_consts import major_pieces
-
-
-def calc_depth(chess_state):
-    num_major = 0
-
-    for pos in s1.positions:
-        if s1.pos(pos) in major_pieces:
-            num_major += 1
+from src.python.chess.chess_state import fen_to_state
+from src.python.chess.chess_agency import ChessAgent
+# from src.python.chess.chess_consts import major_pieces
 
 
 if __name__ == "__main__":
@@ -61,5 +53,4 @@ if __name__ == "__main__":
     ps.print_stats()
     # ps.print_callers()
     print(s.getvalue())
-
     # print(time.time() * 1000 - t1)

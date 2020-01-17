@@ -1,5 +1,5 @@
-from src.primitive import highest, lowest, compare
-from src.chess.chess_movement import Move
+from src.python.primitive import highest, lowest, compare
+from src.python.chess.chess_movement import Move
 
 
 class GameSearch():

@@ -1,6 +1,6 @@
-from src.chess.chess_state import fen_to_state
-from src.chess.chess_agency import ChessAgent
-from src.chess.chess_movement import Move
+from src.python.chess.chess_state import fen_to_state
+from src.python.chess.chess_agency import ChessAgent
+from src.python.chess.chess_movement import Move
 
 
 def test_obvious_mate():

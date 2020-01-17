@@ -1,5 +1,5 @@
-from src.primitive import lowest, highest
-from src.search import GameSearch
+from src.python.primitive import lowest, highest
+from src.python.search import GameSearch
 
 
 def minimax(game_state, next_actions, score_state, apply_action, search_depth, maxer=True):
