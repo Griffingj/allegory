@@ -129,8 +129,10 @@ class ChessState():
 
             undos.append((c_from, c_to, c_piece))
             undos.append((c_to, None, None))
-            self.positions[c_piece].discard(c_from)
-            self.positions[c_piece].add(c_to)
+
+            if self.positions.get(c_piece, None) is not None:
+                self.positions[c_piece].discard(c_from)
+                self.positions[c_piece].add(c_to)
             self.board[c_to[0]][c_to[1]] = c_piece
             self.board[c_from[0]][c_from[1]] = None
 

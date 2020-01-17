@@ -215,15 +215,16 @@ def get_moves(chess_state):
 
                     if j_tar in b_range:
                         to = (i_tar, j_tar)
-                        victim = chess_state.board[i_tar][j_tar]
+                        if in_board(to):
+                            victim = chess_state.board[i_tar][j_tar]
 
-                        if to == chess_state.en_passant_target:
-                            ep_victim = chess_state.board[i][j_tar]
-                            ept_cap = (to, ep_victim)
-                            moves.append(Move(from_, to, None, None, ept_cap))
+                            if to == chess_state.en_passant_target:
+                                ep_victim = chess_state.board[i][j_tar]
+                                ept_cap = (to, ep_victim)
+                                moves.append(Move(from_, to, None, None, ept_cap))
 
-                        elif victim in enemy_pieces:
-                            moves.append(Move(from_, to, victim))
+                            elif victim in enemy_pieces:
+                                moves.append(Move(from_, to, victim))
 
             # Fixed offset assessment (knights, kings)
             elif piece in knights or piece in kings:
