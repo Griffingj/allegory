@@ -22,17 +22,17 @@ class ChessAgent():
         self.game = state
         return self.search()
 
+    def stop(self):
+        self.chess_search.stop()
+
     def search(self):
         search_basis = deepcopy(self.game)
+        self.chess_search.stop(False)
 
-        (ab, best_path) = self.chess_search.alpha_beta_enh_r(
+        (balance, best_path) = self.chess_search.alpha_beta(
             search_basis,
             self.search_depth,
             None,
             self.diag
         )
-        print(self.diag.counts)
-        return reversed(best_path)
-
-    def apply(self, move):
-        self.game.apply(move)
+        return (balance, reversed(best_path))

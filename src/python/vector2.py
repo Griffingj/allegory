@@ -13,8 +13,8 @@ def v2_range(l, r):
         )
 
 
-def is_shared_diag(v2):
-    iter_ = iter(v2)
+def is_shared_diag(vector2s):
+    iter_ = iter(vector2s)
     left = next(iter_)
     last_sign = None
 
@@ -37,8 +37,8 @@ def is_shared_diag(v2):
         left = right
 
 
-def is_shared_cardinal(v2):
-    iter_ = iter(v2)
+def is_shared_cardinal(vector2s):
+    iter_ = iter(vector2s)
     left = next(iter_)
     right = next(iter_)
 
@@ -63,17 +63,17 @@ def is_shared_cardinal(v2):
             return False
 
 
-def is_shared_union_jack(v2):
-    return is_shared_cardinal(v2) or is_shared_diag(v2)
+def is_shared_union_jack(vector2s):
+    return is_shared_cardinal(vector2s) or is_shared_diag(vector2s)
 
 
 def difference(l, r):
     return (l[0] - r[0], l[1] - r[1])
 
 
+def add(l, r):
+    return (l[0] + r[0], l[1] + r[1])
+
+
 def v2_abs(v2):
     return (abs(v2[0]), abs(v2[1]))
-
-
-def sqr_mag(v2):
-    return v2[0] ** 2 + v2[1] ** 2

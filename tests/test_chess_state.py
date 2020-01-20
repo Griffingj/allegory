@@ -49,13 +49,12 @@ def assert_state_eq(s1, s2):
 
 
 def test_board_apply_typical():
-    s1 = fen_to_state("7k/8/8/8/8/8/4P3/K7 w - - 0 50")
+    s1 = fen_to_state("7k/8/8/8/8/8/4P3/K7 w - - 100 50")
     s2 = deepcopy(s1)
     from_ = (6, 4)
     to_ = (4, 4)
     expected = [
-        (from_, to_, "P"),
-        (to_, None, None)
+        (from_, to_, "P")
     ]
     move = Move(from_, to_, None, (3, 4), None, None)
     undo = s1.board_apply(move)
@@ -77,16 +76,14 @@ def test_board_apply_typical():
 
 
 def test_board_apply_castling():
-    s1 = fen_to_state("4k3/8/8/8/8/8/8/R3K2R w KQ - 0 50")
+    s1 = fen_to_state("4k3/8/8/8/8/8/8/R3K2R w KQ - 100 50")
     s2 = deepcopy(s1)
     from_ = (7, 4)
     to_ = (7, 6)
     c_to = (7, 5)
     expected = [
         (from_, to_, "K"),
-        (to_, None, None),
-        ((7, 7), c_to, "R"),
-        (c_to, None, None)
+        ((7, 7), c_to, "R")
     ]
     move = Move(from_, to_, None, None, None, "-", "K")
     undo = s1.board_apply(move)
@@ -102,13 +99,12 @@ def test_board_apply_castling():
 
 
 def test_apply_typical():
-    s1 = fen_to_state("6k1/8/8/8/8/8/4P3/R3K3 w Q - 0 50")
+    s1 = fen_to_state("6k1/8/8/8/8/8/4P3/R3K3 w Q - 100 50")
     s2 = deepcopy(s1)
     from_ = (6, 4)
     to_ = (4, 4)
     board_undo = [
-        (from_, to_, "P"),
-        (to_, None, None)
+        (from_, to_, "P")
     ]
     move = Move(from_, to_)
     expected = Undo(
@@ -125,16 +121,14 @@ def test_apply_typical():
 
 
 def test_apply_castling():
-    s1 = fen_to_state("4k3/8/8/8/8/8/8/R3K2R w KQ - 0 50")
+    s1 = fen_to_state("4k3/8/8/8/8/8/8/R3K2R w KQ - 100 50")
     s2 = deepcopy(s1)
     from_ = (7, 4)
     to_ = (7, 6)
     c_to = (7, 5)
     board_undo = [
         (from_, to_, "K"),
-        (to_, None, None),
-        ((7, 7), c_to, "R"),
-        (c_to, None, None)
+        ((7, 7), c_to, "R")
     ]
     move = Move(from_, to_, None, None, None, "-", "K")
     expected = Undo(
@@ -151,7 +145,7 @@ def test_apply_castling():
 
 
 def test_apply_ep_capture():
-    s1 = fen_to_state("4k3/8/8/2pP4/8/8/8/R3K2R w KQ c6 0 50")
+    s1 = fen_to_state("4k3/8/8/2pP4/8/8/8/R3K2R w KQ c6 100 50")
     s2 = deepcopy(s1)
     from_ = (3, 3)
     to_ = (2, 2)
@@ -160,7 +154,6 @@ def test_apply_ep_capture():
     ept_cap = (ept, epp)
     board_undo = [
         (from_, to_, "P"),
-        (to_, None, None),
         (ept, None, epp)
     ]
     move = Move(from_, to_, None, None, ept_cap)
@@ -180,7 +173,7 @@ def test_apply_ep_capture():
 
 
 def test_apply_from_check():
-    s1 = fen_to_state("4k3/8/8/8/8/8/3p4/R3K2R w KQ - 0 50")
+    s1 = fen_to_state("4k3/8/8/8/8/8/3p4/R3K2R w KQ - 100 50")
     s2 = deepcopy(s1)
     from_ = (7, 4)
     to_ = (6, 3)
@@ -204,10 +197,10 @@ def test_apply_from_check():
 
 def test_apply_undo_stability():
     states = [
-        "2r3k1/1pq2p1p/p2Q1npb/b3p3/2r1P2B/1BN1R2P/PnP2PP1/3R2K1 b - b6 0 25",
-        "2r3k1/1pq2p1p/p2Q1np1/b3p3/2r1P2B/1BN1b2P/PnP2PP1/3R2K1 w - - 0 26",
-        "2r3k1/1pq2p1p/p2Q1np1/b3p3/2B1P2B/2N1b2P/PnP2PP1/3R2K1 b - - 0 26",
-        "2r3k1/1pq2p1p/p2Q2p1/b3p3/2B1n2B/2N1b2P/PnP2PP1/3R2K1 w - - 0 27",
+        "2r3k1/1pq2p1p/p2Q1npb/b3p3/2r1P2B/1BN1R2P/PnP2PP1/3R2K1 b - b6 50 25",
+        "2r3k1/1pq2p1p/p2Q1np1/b3p3/2r1P2B/1BN1b2P/PnP2PP1/3R2K1 w - - 51 26",
+        "2r3k1/1pq2p1p/p2Q1np1/b3p3/2B1P2B/2N1b2P/PnP2PP1/3R2K1 b - - 52 26",
+        "2r3k1/1pq2p1p/p2Q2p1/b3p3/2B1n2B/2N1b2P/PnP2PP1/3R2K1 w - - 53 27",
     ]
 
     moves = [
@@ -231,16 +224,41 @@ def test_apply_undo_stability():
 
 def test_apply_undo_stability_castling():
     states = [
-        "r3k2r/p6p/1p6/8/8/8/P6P/R3K2R w KQkq b6 0 25",
-        "r3k2r/p6p/1p6/8/8/8/P6P/R4RK1 b kq - 0 25",
-        "2kr3r/p6p/1p6/8/8/8/P6P/R4RK1 w - - 0 26",
-        "2kr3r/p6p/1p6/8/8/8/P5KP/R4R2 b - - 0 26",
+        "r3k2r/p6p/1p6/8/8/8/P6P/R3K2R w KQkq b6 50 25",
+        "r3k2r/p6p/1p6/8/8/8/P6P/R4RK1 b kq - 51 25",
+        "2kr3r/p6p/1p6/8/8/8/P6P/R4RK1 w - - 52 26",
+        "2kr3r/p6p/1p6/8/8/8/P5KP/R4R2 b - - 53 26",
     ]
 
     moves = [
         Move(from_=(7, 4), to_=(7, 6), new_castling_available='kq', castle='K'),
         Move(from_=(0, 4), to_=(0, 2), new_castling_available='-', castle='q'),
         Move(from_=(7, 6), to_=(6, 6))
+    ]
+
+    undos = []
+
+    s1 = fen_to_state(states[0])
+
+    for i, m in enumerate(moves):
+        undos.append(s1.apply(m))
+        assert s1.to_fen() == states[i + 1]
+
+    for i, u in enumerate(reversed(undos)):
+        s1.undo(u)
+        assert s1.to_fen() == states[len(states) - 2 - i]
+
+
+def test_apply_undo_stability_promotion():
+    states = [
+        "4k3/1P6/8/8/8/8/8/4K3 w - - 50 25",
+        "1Q2k3/8/8/8/8/8/8/4K3 b - - 51 25",
+        "1Q6/4k3/8/8/8/8/8/4K3 w - - 52 26"
+    ]
+
+    moves = [
+        Move(from_=(1, 1), to_=(0, 1)),
+        Move(from_=(0, 4), to_=(1, 4))
     ]
 
     undos = []

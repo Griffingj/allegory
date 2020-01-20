@@ -2,26 +2,28 @@ from itertools import chain
 
 from src.python.chess.chess_movement import get_moves, targeted_by
 from src.python.chess.chess_consts import kings, pawns, white, material
-from src.python.primitive import clamp, highest, lowest, interleave
+from src.python.primitive import highest, lowest, interleave
 from src.python.search import GameSearch
 
 
 def score_end(chess_state):
     if chess_state.is_done:
+        # the player affinity is used here to make losing 1 better than the default value in search
         return chess_state.player_affinity() + (lowest if chess_state.active_color is white else highest)
     else:
+        # Presumption that this function is called with a !is_done state only when there are no available moves
         return 0
 
 
+# At the leaf nodes need to assess if the position landed on is a good trade outcome if it's under attack,
+# this is my attempt to handle "The Horizon Effect"
 def horizon_outcome(chess_state, subject, pos):
-    # At the leaf nodes need to assess if the position landed on is a good trade outcome if it's under attack,
-    # this is my attempt to handle "The Horizon Effect"
-    (attackers, avengers) = targeted_by(chess_state, pos)
+    # This function depends on the lists being generated from least to greatest material
+    (enemies, friends) = targeted_by(chess_state, pos)
+
     material_outcome = 0
 
-    if attackers:
-        enemies = sorted(attackers, key=lambda pp: abs(material[pp[1]]))
-        friends = sorted(avengers, key=lambda pp: abs(material[pp[1]]))
+    if enemies:
         ordering = interleave(enemies, friends)
         avengers = list(chain(ordering, [enemies[len(friends)]]) if len(enemies) > len(friends) else ordering)
         victim = subject
@@ -38,8 +40,8 @@ def horizon_outcome(chess_state, subject, pos):
     return material_outcome
 
 
+# "Evaluation" -- assess the balance of a position
 def score_state(chess_state, last_move):
-    # "Evaluation" assess the balance of a position
     if chess_state.is_done:
         return score_end(chess_state)
     else:
@@ -54,9 +56,9 @@ def score_state(chess_state, last_move):
         return chess_state.material_balance + penalty
 
 
+# This is used to guess at what a good move looks like, the better the guess the more likely to produce
+# an alphaBeta prune
 def ranking_score(move, piece):
-    # This is used to guess at what a good move looks like, the better the guess the more likely to produce
-    # an alphaBeta prune
     bonus_co = 11
     penalty_co = 0.9
 
@@ -68,7 +70,7 @@ def ranking_score(move, piece):
     if move.victim is not None or move.ept_cap is not None:
         p_material = abs(material[piece])
         v_material = abs(material[move.victim or move.ept_cap[1]])
-        base_score *= ((clamp(0, v_material - p_material) + 100) / 500 + bonus_co)
+        base_score *= ((v_material - p_material + 100) / 500 + bonus_co)
 
     if move.new_castling_available:
         base_score *= penalty_co

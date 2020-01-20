@@ -2,11 +2,8 @@ from itertools import chain
 import functools
 import math
 
-lowest = float("-inf")
-highest = float("inf")
-
-highest = 2 ** 16
-lowest = -(highest - 1)
+highest = 2 ** 16 - 1
+lowest = -highest
 
 
 def set_(dictionary, key, val):

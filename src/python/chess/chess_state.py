@@ -1,7 +1,9 @@
 from collections import namedtuple
 
 from src.python.chess.chess_consts import b_range, white, black, castling_rooks, material, pieces,\
-    initial_fen, ranks, files, kings, pawns
+    initial_fen, kings, pawns
+
+from src.python.chess.chess_interop import coords_to_chess, chess_to_coords
 
 empty_set = set()
 
@@ -12,16 +14,6 @@ Undo = namedtuple("Undo", [
     "undo_board",
     "redo_move"
 ])
-
-
-def coords_to_chess(pos):
-    (y, x) = pos
-    return f"{files[x]}{ranks[y]}"
-
-
-def chess_to_coords(chess):
-    [f, r] = list(chess)
-    return (ranks.index(int(r)), files.index(f))
 
 
 class ChessState():
@@ -89,22 +81,20 @@ class ChessState():
         (f_y, f_x) = move.from_
         (t_y, t_x) = move.to_
         piece = self.board[f_y][f_x]
-        promotion_rank = 0 if self.active_color == white else 7
-        promotion = piece in pawns and t_y == promotion_rank
+        promotion = piece is not None and piece in pawns and (t_y == 0 or t_y == 7)
         queen = "Q" if self.active_color == white else "q"
         to_piece = queen if promotion else piece
 
         undos = [
-            (move.from_, move.to_, to_piece)
+            (move.from_, move.to_, piece)
         ]
 
         if move.victim is not None:
             undos.append((move.to_, None, move.victim))
-        else:
-            undos.append((move.to_, None, None))
 
-        self.positions[piece].discard(move.from_)
-        self.positions[to_piece].add(move.to_)
+        if piece is not None:
+            self.positions[piece].discard(move.from_)
+            self.positions[to_piece].add(move.to_)
 
         if move.victim is not None:
             self.positions[move.victim].discard(move.to_)
@@ -134,9 +124,7 @@ class ChessState():
                 c_to = (0, 3)
 
             c_piece = self.board[c_from[0]][c_from[1]]
-
             undos.append((c_from, c_to, c_piece))
-            undos.append((c_to, None, None))
             self.positions[c_piece].discard(c_from)
             self.positions[c_piece].add(c_to)
             self.board[c_to[0]][c_to[1]] = c_piece
@@ -149,6 +137,9 @@ class ChessState():
             (from_, to, piece) = undo
             (f_y, f_x) = from_
             self.board[f_y][f_x] = piece
+            if to is not None:
+                (t_y, t_x) = to
+                self.board[t_y][t_x] = None  # If a victim needs to be replaced there will be a following undo for that
 
             if piece is not None:
                 self.positions[piece].add(from_)
@@ -159,7 +150,6 @@ class ChessState():
     def apply(self, move):
         undo_balance = self.material_balance
 
-        # TODO draw rules halfmove counter etc
         if move.victim is not None:
             self.material_balance -= material[move.victim]
 
@@ -178,6 +168,7 @@ class ChessState():
         undo_ept = self.en_passant_target
         self.en_passant_target = move.new_en_passant_target
         self.move += 1 if self.active_color == black else 0
+        self.halfmoves = self.halfmoves + 1
 
         undo_board = self.board_apply(move)
         self.active_color = black if self.active_color == white else white
@@ -208,6 +199,7 @@ class ChessState():
 
         self.board_undo(undo_board)
         self.move -= 1 if self.active_color == white else 0
+        self.halfmoves = self.halfmoves - 1
         self.active_color = black if self.active_color == white else white
         self.is_done = False
         return move
@@ -217,23 +209,12 @@ class ChessState():
         return self.board[y][x]
 
 
-def calc_material_balance(board):
-    balance = 0
-
-    for i in b_range:
-        for j in b_range:
-            piece = board[i][j]
-            if (piece is not None):
-                balance += material[piece]
-
-    return balance
-
-
 def fen_to_state(fen_str):
     [files, color, ca, ept, half_moves, moves] = fen_str.split(" ")
     board = []
     positions = {}
     i = 0
+    balance = 0
 
     for p in pieces:
         positions[p] = set()
@@ -244,6 +225,7 @@ def fen_to_state(fen_str):
         for c in file_str:
             if c in pieces:
                 file_arr.append(c)
+                balance += material[c]
                 positions.get(c).add((i, len(file_arr) - 1))
             else:
                 for n in range(0, int(c)):
@@ -263,9 +245,8 @@ def fen_to_state(fen_str):
         move=int(moves),
         board=board,
         positions=positions,
-        material_balance=calc_material_balance(board)
+        material_balance=balance
     )
-
     return state
 
 

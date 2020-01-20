@@ -1,3 +1,11 @@
+~Http Interaction~
+~Self Play~
+
+Troubleshooting
+Release
+
+Rust rewrite
+
 Evaluation Improvements
     Midgame, Early Game
         Mobility
@@ -17,3 +25,15 @@ Stateful searches
         - Killer Heuristic https://www.chessprogramming.org/Killer_Heuristic
 
 Iterative Deepening
+    - Requires Above to be Useful
+
+Self tuned evaluation coefficients, or trained neural net for evaluation and move ordering
+    - Reinforcement Learning?
+
+    - Genetic Refinement?
+        - Fitness search
+        - Novelty search
+
+    - Gradient Descent
+
+    "exploration" vs. "exploitation" 2:1 ? maybe tuned ratio depending on plateau or not, plateau -> more exploration, breakthrough -> more exploitation

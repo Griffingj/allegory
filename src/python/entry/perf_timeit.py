@@ -2,7 +2,7 @@ import timeit
 
 if __name__ == "__main__":
     # code snippet to be executed only once
-    mysetup = '''
+    mysetup = """
 from src.python.primitive import sign
 import math
 
@@ -32,12 +32,12 @@ def is_shared_diag(positions):
         left = right
 
 b=[(1, 1), (1, 1), (2, 2), (3, 3)]
-'''
+"""
 
     # code snippet whose execution time is to be measured
-    mycode = '''
+    mycode = """
 is_shared_diag(b)
-'''
+"""
 
     # timeit statement
     print(timeit.timeit(setup=mysetup, stmt=mycode, number=10000))

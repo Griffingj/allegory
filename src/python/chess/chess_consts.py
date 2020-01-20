@@ -17,6 +17,7 @@ queens = set("qQ")
 kings = set("kK")
 major_pieces = knights | bishops | rooks | queens
 not_pawns = major_pieces | kings
+not_pawns_l = "NnBbRrQqKk"
 
 white_pinners = set("QRB")
 black_pinners = set("qrb")

@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Chess</title>
+  <link href="/static/chessboard-1_0_0.css" rel="stylesheet" type="text/css" >
+  <link href="/static/chess.css" rel="stylesheet" type="text/css" >
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.1/axios.js"></script>
+  <script src="/static/chessboard-1_0_0-patched.js"></script>
+  <style>
+  </style>
+</head>
+<body style="display: flex; align-items: center; justify-content: center">
+  <div class="center">
+    <div class="top-ctrl">
+      <div class="btn-bar">
+        <label for="params">Depth</label>
+        <input type="text" id="params" size="3" />
+        <button id="stop-analysis">Stop Analysis</button>
+        <button id="play">Auto Play</button>
+        <button id="do-move">Do Move</button>
+        <button id="get-move">Get Move</button>
+      </div>
+      <div class="btn-bar">
+        <button id="super-back">&#x21E4;</button>
+        <button id="back">Back</button>
+        <button id="forward">Forward</button>
+        <button id="super-forward">&#x21E5;</button>
+      </div>
+      <input type="text" id="fen" class="playing" size="60" />
+    </div>
+    <div id="board"></div>
+    <div class="controls">
+      <div class="btn-bar castling">
+        <button id="castle-queen">Castle Queenside</button>
+        <button id="castle-king">Castle Kingside</button>
+      </div>
+      <div class="btn-bar">
+        <button id="start">Start</button>
+        <button id="clear">Clear</button>
+        <button id="reset">Hard Reset</button>
+        <button id="flip">Flip</button>
+      </div>
+    </div>
+  </div>
+  <script src="/static/controller.js"></script>
+</body>
+</html>

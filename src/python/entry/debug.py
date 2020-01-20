@@ -17,29 +17,33 @@ from src.python.vector2 import v2_range
 # best_path = list(ca.start_game(s1))
 # print(best_path)
 
+# states = [
+#     "4k3/1P6/8/8/8/8/8/4K3 w - - 0 25",
+#     "1Q2k3/8/8/8/8/8/8/4K3 b - - 0 25",
+#     "1Q6/4k3/8/8/8/8/8/4K3 w - - 0 26"
+# ]
 
+# moves = [
+#     Move(from_=(1, 1), to_=(0, 1)),
+#     Move(from_=(0, 4), to_=(1, 4))
+# ]
 
-states = [
-    "r3k2r/p6p/1p6/8/8/8/P6P/R3K2R w KQkq b6 0 25",
-    "r3k2r/p6p/1p6/8/8/8/P6P/R4RK1 b kq - 0 25",
-    "2kr3r/p6p/1p6/8/8/8/P6P/R4RK1 w - - 0 26",
-    "2kr3r/p6p/1p6/8/8/8/P5KP/R4R2 b - - 0 26",
-]
+# undos = []
 
-moves = [
-    Move(from_=(7, 4), to_=(7, 6), new_castling_available='kq', castle='K'),
-    Move(from_=(0, 4), to_=(0, 2), new_castling_available='-', castle='q'),
-    Move(from_=(7, 6), to_=(6, 6))
-]
+# s1 = fen_to_state(states[0])
 
-undos = []
+# for i, m in enumerate(moves):
+#     undos.append(s1.apply(m))
+#     assert s1.to_fen() == states[i + 1]
 
-s1 = fen_to_state(states[0])
+# for i, u in enumerate(reversed(undos)):
+#     s1.undo(u)
+#     assert s1.to_fen() == states[len(states) - 2 - i]
+m = Move(
+    (4, 1),
+    (4, 3)
+)
 
-for i, m in enumerate(moves):
-    undos.append(s1.apply(m))
-    assert s1.to_fen() == states[i + 1]
-
-for i, u in enumerate(reversed(undos)):
-    s1.undo(u)
-    assert s1.to_fen() == states[len(states) - 2 - i]
+s1 = fen_to_state("3r2k1/q7/8/8/1Q6/2K5/4N3/8 w - - 0 50")
+s1.apply(m)
+assert horizon_outcome(s1, "Q", m.to_) == -(material["r"] + material["Q"])
