@@ -3,14 +3,8 @@ from copy import deepcopy
 from src.python.chess.chess_state import fen_to_state
 from src.python.chess.chess_movement import get_moves, Move
 
-king_castle = Move(
-    from_=(7, 4), to_=(7, 6), victim=None, new_en_passant_target=None, ept_cap=None,
-    new_castling_available='-', castle='K'
-)
-queen_castle = Move(
-    from_=(7, 4), to_=(7, 2), victim=None, new_en_passant_target=None, ept_cap=None,
-    new_castling_available='-', castle='Q'
-)
+king_castle = Move(from_=(7, 4), to_=(7, 6), castle='K')
+queen_castle = Move(from_=(7, 4), to_=(7, 2), castle='Q')
 
 castling_moves = set([king_castle, queen_castle])
 
@@ -25,28 +19,13 @@ def test_castling_basic():
     s3 = deepcopy(s1)
 
     assert set([
-        Move(
-            from_=(7, 0), to_=(7, 1), victim=None, new_en_passant_target=None, ept_cap=None,
-            new_castling_available='K', castle=None
-        ),
-        Move(
-            from_=(7, 0), to_=(7, 2), victim=None, new_en_passant_target=None, ept_cap=None,
-            new_castling_available='K', castle=None
-        ),
-        Move(
-            from_=(7, 0), to_=(7, 3), victim=None, new_en_passant_target=None, ept_cap=None,
-            new_castling_available='K', castle=None
-        ),
+        Move(from_=(7, 0), to_=(7, 1)),
+        Move(from_=(7, 0), to_=(7, 2)),
+        Move(from_=(7, 0), to_=(7, 3)),
         king_castle,
         queen_castle,
-        Move(
-            from_=(7, 7), to_=(7, 6), victim=None, new_en_passant_target=None, ept_cap=None,
-            new_castling_available='Q', castle=None
-        ),
-        Move(
-            from_=(7, 7), to_=(7, 5), victim=None, new_en_passant_target=None, ept_cap=None,
-            new_castling_available='Q', castle=None
-        )
+        Move(from_=(7, 7), to_=(7, 6)),
+        Move(from_=(7, 7), to_=(7, 5))
     ]).issubset(get_moves(s1))
 
     s2_back = s2.apply(king_castle)
@@ -84,38 +63,50 @@ def test_castling_attacked_space():
 def test_castling_attacked_castle_space():
     s1 = fen_to_state("6k1/8/8/8/4b3/8/P6P/R3K2R w KQ - 0 50")
     assert set([
-        Move(
-            from_=(7, 4), to_=(7, 2), victim=None, new_en_passant_target=None, ept_cap=None,
-            new_castling_available='-', castle='Q'
-        ),
-        Move(
-            from_=(7, 4), to_=(7, 6), victim=None, new_en_passant_target=None, ept_cap=None,
-            new_castling_available='-', castle='K'
-        )
+        Move(from_=(7, 4), to_=(7, 2), castle='Q'),
+        Move(from_=(7, 4), to_=(7, 6), castle='K')
     ]).issubset(get_moves(s1))
 
 
 def test_castling_removes_availability():
     s1 = fen_to_state("r3k2r/p6p/8/8/8/8/P6P/R3K2R w KQkq - 0 50")
     assert set([
-        Move(
-            from_=(7, 4), to_=(7, 2), victim=None, new_en_passant_target=None, ept_cap=None,
-            new_castling_available='kq', castle='Q'
-        ),
-        Move(
-            from_=(7, 4), to_=(7, 6), victim=None, new_en_passant_target=None, ept_cap=None,
-            new_castling_available='kq', castle='K'
-        )
+        Move(from_=(7, 4), to_=(7, 2), castle='Q'),
+        Move(from_=(7, 4), to_=(7, 6), castle='K')
     ]).issubset(get_moves(s1))
 
     s1 = fen_to_state("r3k2r/p6p/8/8/8/8/P6P/R3K2R b KQkq - 0 50")
     assert set([
-        Move(
-            from_=(0, 4), to_=(0, 2), victim=None, new_en_passant_target=None, ept_cap=None,
-            new_castling_available='KQ', castle='q'
-        ),
-        Move(
-            from_=(0, 4), to_=(0, 6), victim=None, new_en_passant_target=None, ept_cap=None,
-            new_castling_available='KQ', castle='k'
-        )
+        Move(from_=(0, 4), to_=(0, 2), castle='q'),
+        Move(from_=(0, 4), to_=(0, 6), castle='k')
     ]).issubset(get_moves(s1))
+
+
+def test_moving_rook_removes_availability():
+    s1 = fen_to_state("r3k2r/p6p/8/8/8/8/P6P/R3K2R w KQkq - 4 3")
+    assert set([
+        Move(from_=(7, 0), to_=(7, 1)),
+        Move(from_=(7, 7), to_=(7, 6))
+    ]).issubset(get_moves(s1))
+
+
+def test_killing_rook_removes_ca():
+    s1 = fen_to_state("r3k2r/pP4Pp/8/8/8/8/Pp4pP/R3K2R w KQkq - 104 52")
+    s2 = deepcopy(s1)
+    m1 = Move(from_=(1, 1), to_=(0, 0), victim="r")
+    m2 = Move(from_=(1, 6), to_=(0, 7), victim="r")
+    assert set([m1, m2]).issubset(get_moves(s1))
+    s1.apply(m1)
+    assert s1.castling_available == "KQk"
+    s2.apply(m2)
+    assert s2.castling_available == "KQq"
+
+    s3 = fen_to_state("r3k2r/pP4Pp/8/8/8/8/Pp4pP/R3K2R b KQkq - 104 52")
+    s4 = deepcopy(s3)
+    m3 = Move(from_=(6, 1), to_=(7, 0), victim="R")
+    m4 = Move(from_=(6, 6), to_=(7, 7), victim="R")
+    assert set([m3, m4]).issubset(get_moves(s3))
+    s3.apply(m3)
+    assert s3.castling_available == "Kkq"
+    s4.apply(m4)
+    assert s4.castling_available == "Qkq"

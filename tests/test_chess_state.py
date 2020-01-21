@@ -56,7 +56,7 @@ def test_board_apply_typical():
     expected = [
         (from_, to_, "P")
     ]
-    move = Move(from_, to_, None, (3, 4), None, None)
+    move = Move(from_, to_, new_ept=(3, 4))
     undo = s1.board_apply(move)
     assert undo == expected
     assert s1.is_done == s2.is_done
@@ -85,7 +85,7 @@ def test_board_apply_castling():
         (from_, to_, "K"),
         ((7, 7), c_to, "R")
     ]
-    move = Move(from_, to_, None, None, None, "-", "K")
+    move = Move(from_, to_, castle="K")
     undo = s1.board_apply(move)
     assert undo == expected
     # board_apply is like a soft apply it shouldn"t change anything except positional state
@@ -130,7 +130,7 @@ def test_apply_castling():
         (from_, to_, "K"),
         ((7, 7), c_to, "R")
     ]
-    move = Move(from_, to_, None, None, None, "-", "K")
+    move = Move(from_, to_, castle="K")
     expected = Undo(
         s2.material_balance,
         s2.castling_available,
@@ -156,7 +156,7 @@ def test_apply_ep_capture():
         (from_, to_, "P"),
         (ept, None, epp)
     ]
-    move = Move(from_, to_, None, None, ept_cap)
+    move = Move(from_, to_, ept_cap=ept_cap)
     expected = Undo(
         s2.material_balance,
         s2.castling_available,
@@ -166,7 +166,7 @@ def test_apply_ep_capture():
     )
     back = s1.apply(move)
     assert s1.board[2][2] == "P"
-    assert s1.material_balance == 1150
+    assert s1.material_balance == 1110
     assert back == expected
     s1.undo(back)
     assert_state_eq(s1, s2)
@@ -195,9 +195,31 @@ def test_apply_from_check():
     assert_state_eq(s1, s2)
 
 
+def is_sync_positions(state):
+    for k in state.positions:
+        coords = state.positions[k]
+        for (y, x) in coords:
+            assert state.board[y][x] == k
+
+
+def is_stable(states, moves):
+    state = fen_to_state(states[0])
+    undos = []
+
+    for i, m in enumerate(moves):
+        undos.append(state.apply(m))
+        is_sync_positions(state)
+        assert state.to_fen() == states[i + 1]
+
+    for i, u in enumerate(reversed(undos)):
+        state.undo(u)
+        is_sync_positions(state)
+        assert state.to_fen() == states[len(states) - 2 - i]
+
+
 def test_apply_undo_stability():
     states = [
-        "2r3k1/1pq2p1p/p2Q1npb/b3p3/2r1P2B/1BN1R2P/PnP2PP1/3R2K1 b - b6 50 25",
+        "2r3k1/1pq2p1p/p2Q1npb/b3p3/2r1P2B/1BN1R2P/PnP2PP1/3R2K1 b - - 50 25",
         "2r3k1/1pq2p1p/p2Q1np1/b3p3/2r1P2B/1BN1b2P/PnP2PP1/3R2K1 w - - 51 26",
         "2r3k1/1pq2p1p/p2Q1np1/b3p3/2B1P2B/2N1b2P/PnP2PP1/3R2K1 b - - 52 26",
         "2r3k1/1pq2p1p/p2Q2p1/b3p3/2B1n2B/2N1b2P/PnP2PP1/3R2K1 w - - 53 27",
@@ -208,45 +230,23 @@ def test_apply_undo_stability():
         Move(from_=(5, 1), to_=(4, 2), victim="r"),
         Move(from_=(2, 5), to_=(4, 4), victim="P")
     ]
-
-    undos = []
-
-    s1 = fen_to_state(states[0])
-
-    for i, m in enumerate(moves):
-        undos.append(s1.apply(m))
-        assert s1.to_fen() == states[i + 1]
-
-    for i, u in enumerate(reversed(undos)):
-        s1.undo(u)
-        assert s1.to_fen() == states[len(states) - 2 - i]
+    is_stable(states, moves)
 
 
 def test_apply_undo_stability_castling():
     states = [
-        "r3k2r/p6p/1p6/8/8/8/P6P/R3K2R w KQkq b6 50 25",
-        "r3k2r/p6p/1p6/8/8/8/P6P/R4RK1 b kq - 51 25",
-        "2kr3r/p6p/1p6/8/8/8/P6P/R4RK1 w - - 52 26",
-        "2kr3r/p6p/1p6/8/8/8/P5KP/R4R2 b - - 53 26",
+        "r3k2r/p6p/8/1p6/8/8/P6P/R3K2R w KQkq b6 50 25",
+        "r3k2r/p6p/8/1p6/8/8/P6P/R4RK1 b kq - 51 25",
+        "2kr3r/p6p/8/1p6/8/8/P6P/R4RK1 w - - 52 26",
+        "2kr3r/p6p/8/1p6/8/8/P5KP/R4R2 b - - 53 26",
     ]
 
     moves = [
-        Move(from_=(7, 4), to_=(7, 6), new_castling_available='kq', castle='K'),
-        Move(from_=(0, 4), to_=(0, 2), new_castling_available='-', castle='q'),
+        Move(from_=(7, 4), to_=(7, 6), castle='K'),
+        Move(from_=(0, 4), to_=(0, 2), castle='q'),
         Move(from_=(7, 6), to_=(6, 6))
     ]
-
-    undos = []
-
-    s1 = fen_to_state(states[0])
-
-    for i, m in enumerate(moves):
-        undos.append(s1.apply(m))
-        assert s1.to_fen() == states[i + 1]
-
-    for i, u in enumerate(reversed(undos)):
-        s1.undo(u)
-        assert s1.to_fen() == states[len(states) - 2 - i]
+    is_stable(states, moves)
 
 
 def test_apply_undo_stability_promotion():
@@ -260,15 +260,4 @@ def test_apply_undo_stability_promotion():
         Move(from_=(1, 1), to_=(0, 1)),
         Move(from_=(0, 4), to_=(1, 4))
     ]
-
-    undos = []
-
-    s1 = fen_to_state(states[0])
-
-    for i, m in enumerate(moves):
-        undos.append(s1.apply(m))
-        assert s1.to_fen() == states[i + 1]
-
-    for i, u in enumerate(reversed(undos)):
-        s1.undo(u)
-        assert s1.to_fen() == states[len(states) - 2 - i]
+    is_stable(states, moves)

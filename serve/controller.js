@@ -134,7 +134,7 @@
   $('#super-forward').on('click', () => goTo(Math.max(stateList.length - 1, 0)));
 
   function updateCastle() {
-    function subtract(s1, s2) {
+    function subtract_str(s1, s2) {
       const s = new Set(s2);
       let out = "";
 
@@ -146,7 +146,7 @@
     const [, , ca] = prevFen.split(' ');
     const remove = perspective == chess.white ? "KQ" : "kq";
     const color = perspective == chess.white ? chess.white : chess.black;
-    newFen(updatePlayMove(color, board.fen(), subtract(ca, remove)));
+    newFen(updatePlayMove(color, board.fen(), subtract_str(ca, remove)));
   }
 
   $('#castle-queen').on('click', () => {

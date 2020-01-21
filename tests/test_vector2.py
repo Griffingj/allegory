@@ -1,4 +1,4 @@
-from src.python.vector2 import is_shared_cardinal, is_shared_diag, difference, v2_abs, v2_range
+from src.python.vector2 import is_shared_cardinal, is_shared_diag, subtract, v2_abs, v2_range
 
 
 def test_is_shared_diag():
@@ -17,10 +17,10 @@ def test_is_shared_cardinal():
     assert not is_shared_cardinal([(-1, 1), (2, 2), (-3, 3)])
 
 
-def test_difference():
-    assert difference((0, 1), (3, 4)) == (-3, -3)
-    assert difference((-5, -3), (3, 4)) == (-8, -7)
-    assert difference((5, 7), (2, 1)) == (3, 6)
+def test_subtract():
+    assert subtract((0, 1), (3, 4)) == (-3, -3)
+    assert subtract((-5, -3), (3, 4)) == (-8, -7)
+    assert subtract((5, 7), (2, 1)) == (3, 6)
 
 
 def test_v2_abs():

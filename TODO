@@ -4,12 +4,12 @@
 Troubleshooting
 Release
 
-Rust rewrite
-
 Evaluation Improvements
     Midgame, Early Game
         Mobility
         Attacks
+
+Rust Full Rewrite
 
 Incremental updates
     - king safety
@@ -32,8 +32,17 @@ Self tuned evaluation coefficients, or trained neural net for evaluation and mov
 
     - Genetic Refinement?
         - Fitness search
+            - Basic:
+                Do a tournament, take top 10% permute them and use that as basis for the next gen
+            - Correct imbalance selection
+                Of those most fit, find matches in which they lost, label opponent lost to as Underdog
+                    Find Underdog's opponents, of the most fit of those, combine with original subject
+
         - Novelty search
 
     - Gradient Descent
 
     "exploration" vs. "exploitation" 2:1 ? maybe tuned ratio depending on plateau or not, plateau -> more exploration, breakthrough -> more exploitation
+    Curiosity training, seeing different results = success
+    https://pathak22.github.io/large-scale-curiosity/
+    https://openai.com/blog/reinforcement-learning-with-prediction-based-rewards/

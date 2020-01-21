@@ -1,11 +1,23 @@
+import re
 from collections import namedtuple
 
 from src.python.chess.chess_consts import b_range, white, black, castling_rooks, material, pieces,\
-    initial_fen, kings, pawns
+    initial_fen, kings, pawns, castling, initial_positions, rooks, all_pieces, associations,\
+    color_o
+
+from src.python.primitive import intersect_str, subtract_str
 
 from src.python.chess.chess_interop import coords_to_chess, chess_to_coords
 
-empty_set = set()
+from src.python.vector2 import add, subtract, v2_abs
+
+from src.python.chess.chess_movement import abs_unit_d, left_two, right_two, left_one, right_one
+
+fen_invalid = re.compile(r"[^wba-h0-9pnbrqkPNBRQK\/\- ]")
+
+fen_pattern = re.compile(
+    r"^(([1-8pnbrqkPNBRQK]){1,8}\/){7}[1-8pnbrqkPNBRQK]{1,8} [wb] [-KQkq]{1,4} (([a-h][1-8])|-) \d+ \d+$"
+)
 
 Undo = namedtuple("Undo", [
     "undo_balance",
@@ -14,6 +26,10 @@ Undo = namedtuple("Undo", [
     "undo_board",
     "redo_move"
 ])
+
+
+def normal_ca(ca_):
+    return None if ca_ is None or len(ca_) == 0 else ca_
 
 
 class ChessState():
@@ -30,7 +46,8 @@ class ChessState():
             move,  # The turn counter, incremented after each player has played a turn
             board,
             positions,
-            material_balance):
+            material_balance,
+            total_material):
 
         self.is_done = is_done
         self.active_color = active_color
@@ -41,6 +58,7 @@ class ChessState():
         self.board = board
         self.positions = positions
         self.material_balance = material_balance
+        self.total_material = total_material
 
     def to_fen(self):
         # A FEN "record" defines a particular game position, all in one text line and using only the ASCII character
@@ -89,6 +107,9 @@ class ChessState():
             (move.from_, move.to_, piece)
         ]
 
+        if promotion:
+            undos.append((None, move.to_, queen))
+
         if move.victim is not None:
             undos.append((move.to_, None, move.victim))
 
@@ -112,17 +133,7 @@ class ChessState():
         if move.castle is not None:
             # Have to move the rook too
             c_from = castling_rooks[move.castle]
-            c_to = None
-
-            if move.castle == "K":
-                c_to = (7, 5)
-            elif move.castle == "Q":
-                c_to = (7, 3)
-            elif move.castle == "k":
-                c_to = (0, 5)
-            else:
-                c_to = (0, 3)
-
+            c_to = add(left_one if move.castle in kings else right_one, move.to_)
             c_piece = self.board[c_from[0]][c_from[1]]
             undos.append((c_from, c_to, c_piece))
             self.positions[c_piece].discard(c_from)
@@ -135,19 +146,52 @@ class ChessState():
     def board_undo(self, undos):
         for undo in undos:
             (from_, to, piece) = undo
-            (f_y, f_x) = from_
-            self.board[f_y][f_x] = piece
-            if to is not None:
-                (t_y, t_x) = to
-                self.board[t_y][t_x] = None  # If a victim needs to be replaced there will be a following undo for that
 
-            if piece is not None:
-                self.positions[piece].add(from_)
+            if from_ is not None:
+                (f_y, f_x) = from_
+                self.board[f_y][f_x] = piece
+
+                if to is not None:
+                    (t_y, t_x) = to
+                    # If a victim needs to be replaced there will be a following undo for that
+                    self.board[t_y][t_x] = None
+
+                if piece is not None:
+                    self.positions[piece].add(from_)
+                    self.positions[piece].discard(to)
+            else:
+                # Promotions and magic moves
+                self.board[t_y][t_x] = None
                 self.positions[piece].discard(to)
 
         return self
 
     def apply(self, move):
+        piece_moved = self.pos(move.from_)
+
+        # ==== Castling ====
+        undo_ca = self.castling_available
+        ca_total = "" if self.castling_available is None else self.castling_available
+        ca_color_base = castling[self.active_color]
+        ca_color_active = intersect_str(ca_total, ca_color_base)
+
+        if piece_moved in kings:
+            if move.from_ in initial_positions[piece_moved]:
+                diff = subtract(move.to_, move.from_)
+                if diff == left_two or diff == right_two or v2_abs(diff) in abs_unit_d:
+                    # Remove all ca for if king moves
+                    self.castling_available = normal_ca(subtract_str(ca_total, ca_color_base))
+                else:
+                    raise AssertionError("Encountered unexpected king move")
+
+        elif piece_moved in rooks:
+            for castling_key in ca_color_active:
+                if castling_rooks[castling_key] == move.from_:
+                    self.castling_available = normal_ca(subtract_str(ca_total, castling_key))
+                    break
+
+        # ==== Victim ====
+
         undo_balance = self.material_balance
 
         if move.victim is not None:
@@ -155,23 +199,31 @@ class ChessState():
 
         if move.victim in kings:
             self.is_done = True
+        elif move.victim in rooks:
+            # Remove castling availability for dead rook if it hasn't moved
+            for k in subtract_str(ca_total, castling[self.active_color]):
+                if castling_rooks[k] == move.to_:
+                    self.castling_available = normal_ca(subtract_str(ca_total, k))
+
+        self.move += 1 if self.active_color == black else 0
+        self.halfmoves = self.halfmoves + 1
+
+        # ==== En Passant ====
 
         if move.ept_cap is not None:
             (pos, piece) = move.ept_cap
             self.material_balance -= material[piece]
 
-        undo_ca = self.castling_available
-
-        if move.new_castling_available is not None:
-            self.castling_available = None if move.new_castling_available == "-" else move.new_castling_available
-
         undo_ept = self.en_passant_target
-        self.en_passant_target = move.new_en_passant_target
-        self.move += 1 if self.active_color == black else 0
-        self.halfmoves = self.halfmoves + 1
+        self.en_passant_target = move.new_ept
+
+        # ==== Movement ====
 
         undo_board = self.board_apply(move)
-        self.active_color = black if self.active_color == white else white
+
+        # ==== Done ====
+
+        self.active_color = color_o[self.active_color]
 
         return Undo(
             undo_balance,
@@ -190,17 +242,13 @@ class ChessState():
             move
         ) = undo
 
-        if undo_balance is not None:
-            self.material_balance = undo_balance
-        if undo_ca is not None:
-            self.castling_available = undo_ca
-        if undo_ept is not None:
-            self.en_passant_target = undo_ept
-
+        self.material_balance = undo_balance
+        self.castling_available = undo_ca
+        self.en_passant_target = undo_ept
         self.board_undo(undo_board)
         self.move -= 1 if self.active_color == white else 0
         self.halfmoves = self.halfmoves - 1
-        self.active_color = black if self.active_color == white else white
+        self.active_color = color_o[self.active_color]
         self.is_done = False
         return move
 
@@ -208,24 +256,51 @@ class ChessState():
         (y, x) = pos
         return self.board[y][x]
 
+    def format_ascii(self):
+        board_str = ""
+        for i in b_range:
+            rank = "["
+            for j in b_range:
+                next_ = self.board[i][j]
+                rank += "_" if next_ is None else next_
+            rank += "]\n"
+            board_str += rank
+        return board_str
 
-def fen_to_state(fen_str):
-    [files, color, ca, ept, half_moves, moves] = fen_str.split(" ")
+
+def normalize_fen(fenish):
+    striped = re.sub(r"\s+", " ", fenish.strip())
+    return re.sub(fen_invalid, "", striped)
+
+
+def head(iterable):
+    return next(iter(iterable))
+
+
+def fen_to_state(fen_str, strict=True):
+    clean = normalize_fen(fen_str)
+
+    if fen_pattern.search(clean) is None:
+        raise Exception(f"Fen bad format, '{fen_str}'")
+
+    [files, active_color, ca, ept, half_moves, moves] = clean.split(" ")
     board = []
     positions = {}
     i = 0
     balance = 0
+    total_material = 0
 
-    for p in pieces:
+    for p in all_pieces:
         positions[p] = set()
 
     for file_str in files.split("/"):
         file_arr = []
 
         for c in file_str:
-            if c in pieces:
+            if c in all_pieces:
                 file_arr.append(c)
                 balance += material[c]
+                total_material += abs(material[c])
                 positions.get(c).add((i, len(file_arr) - 1))
             else:
                 for n in range(0, int(c)):
@@ -233,19 +308,59 @@ def fen_to_state(fen_str):
         board.append(file_arr)
         i += 1
 
+    if strict:
+        for color in (white, black):
+            king = head((kings & pieces[color]))
+            if not len(positions[king]):
+                raise Exception(f"No {color} king present in fen")
+
+        if ca != "-":
+            for color in (white, black):
+                color_ca = intersect_str(castling[color], ca)
+                king = head((kings & pieces[color]))
+
+                if len(color_ca) and head(initial_positions[king]) not in positions[king]:
+                    raise Exception(f"Found unexpected castling availability when {color} King already moved")
+
+                rook = head((rooks & pieces[color]))
+                for k in color_ca:
+                    (y, x) = castling_rooks[k]
+                    if board[y][x] != rook:
+                        raise Exception(f"Found unexpected castling availability when {color} Rook already moved")
+
+        if ept != "-":
+            offset = (1, 0)
+            expected_rank = 3
+
+            if active_color == black:
+                offset = (-1, 0)
+                expected_rank = 4
+
+            (y, x) = add(chess_to_coords(ept), offset)
+
+            if y != expected_rank:
+                raise Exception(f"Unexpected en passant target rank '{y}'")
+
+            p = board[y][x]
+            (enemies, _) = associations[active_color]
+
+            if p is None or p not in pawns or p not in enemies:
+                raise Exception("En passant target is not found in board")
+
     en_passant_target = chess_to_coords(ept) if ept != "-" else None
     castling_available = ca if ca != "-" else None
 
     state = ChessState(
         is_done=False,
-        active_color=color,
+        active_color=active_color,
         castling_available=castling_available,
         en_passant_target=en_passant_target,
         halfmoves=int(half_moves),
         move=int(moves),
         board=board,
         positions=positions,
-        material_balance=balance
+        material_balance=balance,
+        total_material=total_material
     )
     return state
 

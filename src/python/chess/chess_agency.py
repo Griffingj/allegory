@@ -29,10 +29,15 @@ class ChessAgent():
         search_basis = deepcopy(self.game)
         self.chess_search.stop(False)
 
-        (balance, best_path) = self.chess_search.alpha_beta(
+        (score, best_path) = self.chess_search.alpha_beta(
             search_basis,
             self.search_depth,
             None,
+            [],
             self.diag
         )
-        return (balance, reversed(best_path))
+
+        # if scan_depth == 5:
+        #     with open(ROOT_DIR + "/debug.json", "w+") as outfile:
+        #         json.dump(scores, outfile)
+        return (score, reversed(best_path))

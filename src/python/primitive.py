@@ -46,12 +46,12 @@ def fold(cb, iter_, acc_=None):
     return acc
 
 
-def subtract(base_str, remove_str):
+def subtract_str(base_str, remove_str):
     s = set(remove_str)
     return fold(lambda a, n: a + n if n not in s else a, iter(base_str), "")
 
 
-def intersect(str1, str2):
+def intersect_str(str1, str2):
     return set(str1).intersection(str2)
 
 

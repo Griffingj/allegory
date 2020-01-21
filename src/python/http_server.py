@@ -1,4 +1,5 @@
 import asyncio
+import sys, traceback
 from threading import Lock
 import json
 from uuid import uuid4
@@ -10,6 +11,7 @@ from root import ROOT_DIR
 from src.python.chess.chess_interop import format_move
 from src.python.chess.chess_state import fen_to_state
 from src.python.chess.chess_agency import ChessAgent
+from src.python.primitive import highest
 
 serve_folder = ROOT_DIR + "/serve"
 app = Flask(__name__, static_url_path="/static", static_folder=serve_folder)
@@ -46,21 +48,22 @@ def create_analysis():
         try:
             future = loop.run_in_executor(None, anaylsis)
             loop.run_until_complete(future)
-        except Exception as e:
+        except Exception:
             print("Failed create_analysis: ")
-            raise e
+            traceback.print_exc(file=sys.stdout)
         finally:
             analysis_lock.release()
 
-        (balance, best_path) = out["result"]
+        (score, best_path) = out["result"]
         next_move = next(best_path)
         next_state = deepcopy(shared["agent"].game)
         next_state.apply(next_move)
         next_fen = next_state.to_fen()
         resp = {
-            "balance": balance,
+            "score": score,
             "move": format_move(next_move),
             "fen": next_fen,
+            "resign": abs(score) == highest - 1,
             "done": next_state.is_done
         }
         print(f"Reponse {request_id[:6]} for POST /api/analysis")

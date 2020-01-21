@@ -51,14 +51,14 @@ def test_horizon_outcome():
         (4, 3)
     )
     s1.apply(m)
-    assert horizon_outcome(s1, "Q", m.to_) == 0
+    assert horizon_outcome(s1, "w", "Q", m.to_) == 0
 
     # King can't help
     s1 = fen_to_state("3r2k1/q7/8/8/1Q6/2K5/8/8 w - - 0 50")
     s1.apply(m)
-    assert horizon_outcome(s1, "Q", m.to_) == -material["Q"]
+    assert horizon_outcome(s1, "w", "Q", m.to_) == -material["Q"]
 
     # Bad trade early out
     s1 = fen_to_state("3r2k1/q7/8/8/1Q6/2K5/4N3/8 w - - 0 50")
     s1.apply(m)
-    assert horizon_outcome(s1, "Q", m.to_) == -(material["r"] + material["Q"])
+    assert horizon_outcome(s1, "w", "Q", m.to_) == -(material["r"] + material["Q"])

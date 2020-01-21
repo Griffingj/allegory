@@ -67,7 +67,7 @@ def is_shared_union_jack(vector2s):
     return is_shared_cardinal(vector2s) or is_shared_diag(vector2s)
 
 
-def difference(l, r):
+def subtract(l, r):
     return (l[0] - r[0], l[1] - r[1])
 
 

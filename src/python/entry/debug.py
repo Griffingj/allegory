@@ -8,42 +8,39 @@ from src.python.vector2 import v2_range
 
 # fen = "2r3k1/1pq2p1p/p4Qp1/4p3/2B1P2B/4b2P/P1P2PP1/3n2K1 b - - 0 25"
 # fen = "1Q2kb1r/p2n1ppp/4q3/4p1B1/4P3/8/PPP2PPP/2KR4 b - - 0 50"
-# s1 = fen_to_state(fen)
 
-# # s1.apply(
-# #     Move(from_=(1, 3), to_=(0, 1), victim="Q")
-# # )
-# ca = ChessAgent(4)
-# best_path = list(ca.start_game(s1))
-# print(best_path)
+# fen = "r1b1k1nr/Ppqp1ppp/8/8/3p4/5P2/P1PPP1PP/R3KB1R b KQkq - 47 6"
 
-# states = [
-#     "4k3/1P6/8/8/8/8/8/4K3 w - - 0 25",
-#     "1Q2k3/8/8/8/8/8/8/4K3 b - - 0 25",
-#     "1Q6/4k3/8/8/8/8/8/4K3 w - - 0 26"
-# ]
+# fen = 'r3k1nr/Pp1p1ppp/8/8/3p4/2P2P2/P2PP1P1/R3KB1q b KQ - 52 9'
+fen = "2b1k2r/1p1pnppp/8/8/8/2PP1P2/rq1PR1PP/2K2B1R w k - 58 29"
 
-# moves = [
-#     Move(from_=(1, 1), to_=(0, 1)),
-#     Move(from_=(0, 4), to_=(1, 4))
-# ]
+fen = "r1b1k1nr/Ppqp1ppp/8/8/3p4/5P2/P1PPP1PP/R3KB1R b KQkq - 47 23"
+fen = "2bk2nr/rp3pp1/7p/3p2q1/3K2PP/3PPP2/P2P4/1R3B1R b - h3 67 33"
+fen = "2b1k1nr/rp1p1ppp/8/6q1/8/1K1P1P2/P2PP1PP/1R3B1R w k - 58 29"
+s1 = fen_to_state(fen)
 
-# undos = []
+# m = Move(
+#     (3, 0),
+#     (5, 0),
+#     "K"
+# )
+# s1.apply(m)
+# assert s1.is_done
 
-# s1 = fen_to_state(states[0])
+# Test get_move issue
+# print(get_moves(s1))
 
-# for i, m in enumerate(moves):
-#     undos.append(s1.apply(m))
-#     assert s1.to_fen() == states[i + 1]
+# m = Move(
+#     (4, 1),
+#     (4, 3)
+# )
 
-# for i, u in enumerate(reversed(undos)):
-#     s1.undo(u)
-#     assert s1.to_fen() == states[len(states) - 2 - i]
-m = Move(
-    (4, 1),
-    (4, 3)
-)
 
-s1 = fen_to_state("3r2k1/q7/8/8/1Q6/2K5/4N3/8 w - - 0 50")
-s1.apply(m)
-assert horizon_outcome(s1, "Q", m.to_) == -(material["r"] + material["Q"])
+# # Test trade off issue
+# s1.apply(m)
+# print(horizon_outcome(s1, "w", "Q", m.to_))
+
+# # Test high level
+ca = ChessAgent(5)
+best_path = list(ca.start_game(s1))
+print(best_path)
