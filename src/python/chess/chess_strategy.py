@@ -42,7 +42,7 @@ def horizon_outcome(chess_state, p_color, subject, pos):
     return material_outcome
 
 
-rank_bonus = [None, 120, 60, 15, 15, 10, 0]
+rank_bonus = [None, 120, 60, 13, 14, 10, 0]
 
 
 def pawn_bonus(chess_state, p_color):
