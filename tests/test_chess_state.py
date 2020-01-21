@@ -57,7 +57,7 @@ def test_board_apply_typical():
         (from_, to_, "P")
     ]
     move = Move(from_, to_, new_ept=(3, 4))
-    undo = s1.board_apply(move)
+    undo = s1.board_apply(move, False)
     assert undo == expected
     assert s1.is_done == s2.is_done
     assert s1.active_color == s2.active_color
@@ -86,7 +86,7 @@ def test_board_apply_castling():
         ((7, 7), c_to, "R")
     ]
     move = Move(from_, to_, castle="K")
-    undo = s1.board_apply(move)
+    undo = s1.board_apply(move, False)
     assert undo == expected
     # board_apply is like a soft apply it shouldn"t change anything except positional state
     # this is a workaround to make check testing easier for now

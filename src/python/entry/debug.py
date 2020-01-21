@@ -41,6 +41,3 @@ s1 = fen_to_state(fen)
 # print(horizon_outcome(s1, "w", "Q", m.to_))
 
 # # Test high level
-ca = ChessAgent(5)
-best_path = list(ca.start_game(s1))
-print(best_path)

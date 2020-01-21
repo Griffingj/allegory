@@ -42,7 +42,7 @@ def horizon_outcome(chess_state, p_color, subject, pos):
     return material_outcome
 
 
-rank_bonus = [0, 120, 60, 30, 15, 15, 0]
+rank_bonus = [None, 120, 60, 15, 15, 10, 0]
 
 
 def pawn_bonus(chess_state, p_color):
@@ -61,17 +61,8 @@ def pawn_bonus(chess_state, p_color):
                 piece = chess_state.pos(to)
 
                 if piece is not None and piece == us_pawn:
-                    bonus += 10
+                    bonus += 5
 
-    return bonus
-
-
-def piece_in_corner(chess_state, p_color):
-    bonus = 0
-    for corner in corners:
-        piece = chess_state.pos(corner)
-        if piece is not None and piece in pieces[p_color]:
-            bonus -= 20
     return bonus
 
 
@@ -81,7 +72,7 @@ def knight_on_edge(chess_state, p_color):
 
     for (y, x) in chess_state.positions[knight]:
         if y == 0 or y == 7 or x == 0 or x == 7:
-            bonus -= 20
+            bonus -= 25
     return bonus
 
 
@@ -105,11 +96,11 @@ def score_state(chess_state, last_move):
 
         # TODO
         # Stacked Pinners
+        # Open rays
         # Keep pieces together endgame
 
         for c in (white, black):
             c_bonus = pawn_bonus(chess_state, c)
-            c_bonus += piece_in_corner(chess_state, c)
             c_bonus += knight_on_edge(chess_state, c)
             bonus += c_bonus * affinity[c]
 

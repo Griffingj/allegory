@@ -27,6 +27,8 @@ Undo = namedtuple("Undo", [
     "redo_move"
 ])
 
+top_bottom = set([0, 7])
+
 
 def normal_ca(ca_):
     return None if ca_ is None or len(ca_) == 0 else ca_
@@ -95,11 +97,11 @@ class ChessState():
     def player_affinity(self):
         return 1 if self.active_color == white else -1
 
-    def board_apply(self, move):
+    def board_apply(self, move, promotion):
         (f_y, f_x) = move.from_
         (t_y, t_x) = move.to_
         piece = self.board[f_y][f_x]
-        promotion = piece is not None and piece in pawns and (t_y == 0 or t_y == 7)
+
         queen = "Q" if self.active_color == white else "q"
         to_piece = queen if promotion else piece
 
@@ -113,9 +115,8 @@ class ChessState():
         if move.victim is not None:
             undos.append((move.to_, None, move.victim))
 
-        if piece is not None:
-            self.positions[piece].discard(move.from_)
-            self.positions[to_piece].add(move.to_)
+        self.positions[piece].discard(move.from_)
+        self.positions[to_piece].add(move.to_)
 
         if move.victim is not None:
             self.positions[move.victim].discard(move.to_)
@@ -219,7 +220,12 @@ class ChessState():
 
         # ==== Movement ====
 
-        undo_board = self.board_apply(move)
+        promotion = piece_moved in pawns and move.to_[0] in top_bottom
+
+        if promotion:
+            self.material_balance += (material["Q"] - material["P"]) * self.player_affinity()
+
+        undo_board = self.board_apply(move, promotion)
 
         # ==== Done ====
 
