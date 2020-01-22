@@ -22,7 +22,6 @@ class GameSearch():
             game_state,
             scan_depth,
             last_move,
-            history,
             diag,
             alpha=lowest_score,
             beta=highest_score):
@@ -40,19 +39,16 @@ class GameSearch():
                 for action in self.next_actions(game_state):
                     (new_state, undo) = self.apply_action(game_state, action)
                     next_alpha = max_best if max_best[0] > alpha[0] else alpha
-                    history.append(action)
 
                     (next_score, critical_path) = self.alpha_beta(
                         new_state,
                         scan_depth - 1,
                         action,
-                        history,
                         diag,
                         next_alpha,
                         beta
                     )
                     new_state.undo(undo)
-                    history.pop()
 
                     if next_score > max_best[0]:
                         critical_path.append(action)
@@ -73,19 +69,16 @@ class GameSearch():
                 for action in self.next_actions(game_state):
                     (new_state, undo) = self.apply_action(game_state, action)
                     next_beta = min_best if min_best[0] < beta[0] else beta
-                    history.append(action)
 
                     (next_score, critical_path) = self.alpha_beta(
                         new_state,
                         scan_depth - 1,
                         action,
-                        history,
                         diag,
                         alpha,
                         next_beta
                     )
                     new_state.undo(undo)
-                    history.pop()
 
                     if next_score < min_best[0]:
                         critical_path.append(action)

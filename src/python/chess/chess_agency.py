@@ -33,11 +33,7 @@ class ChessAgent():
             search_basis,
             self.search_depth,
             None,
-            [],
             self.diag
         )
 
-        # if scan_depth == 5:
-        #     with open(ROOT_DIR + "/debug.json", "w+") as outfile:
-        #         json.dump(scores, outfile)
         return (score, reversed(best_path))
