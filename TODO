@@ -1,28 +1,15 @@
-
-Release
-
 Evaluation Improvements
     Midgame, Early Game
         Mobility
-        Attacks
+    Cache somehow
+
+Incremental Move Gen
+
+Zobrist hashing for incremental hash updates
 
 Rust Full Rewrite
 
-Incremental updates
-    - king safety
-    - mobility
-    - attacks
-        - pins
-    - defends
-    - static exchange evaluation
 
-Stateful searches
-    - Zobrist hashing for incremental hash updates
-        - to be used keys in transposition tables
-        - Killer Heuristic https://www.chessprogramming.org/Killer_Heuristic
-
-Iterative Deepening
-    - Requires Above to be Useful
 
 Self tuned evaluation coefficients, or trained neural net for evaluation and move ordering
     - Reinforcement Learning?

@@ -2,6 +2,9 @@ import string
 
 initial_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
+highest_score = 2 ** 16 - 1
+lowest_score = -highest_score
+
 white = "w"
 black = "b"
 

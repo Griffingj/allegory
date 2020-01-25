@@ -12,6 +12,7 @@ def test_obvious_mate():
         Move(from_=(7, 2), to_=(7, 6), victim='K')
     ]).issubset(path)
 
+
 # Slow
 # def test_queen_sac():
 #     s1 = fen_to_state("1b2kb1r/p2n1ppp/4q3/4p1B1/4P3/1Q6/PPP2PPP/2KR4 w - - 0 24")  # "Opera" game queen sac mate

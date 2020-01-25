@@ -1,12 +1,11 @@
-from src.python.primitive import lowest, highest
-from src.python.search import GameSearch
+from src.python.chess.chess_strategy import lowest_score, highest_score
 
 
 def minimax(game_state, next_actions, score_state, apply_action, search_depth, maxer=True):
     if search_depth == 0 or game_state.is_done:
         return score_state(game_state)
     else:
-        scores = [lowest if maxer else highest]
+        scores = [lowest_score if maxer else highest_score]
 
         for action in next_actions(game_state):
             (new_state, undo) = apply_action(game_state, action)
@@ -29,14 +28,14 @@ def alpha_beta_basic(
         score_state,
         apply_action,
         scan_depth,
-        max_prior_best=(lowest, None),
-        min_prior_best=(highest, None)):
+        max_prior_best=(lowest_score, None),
+        min_prior_best=(highest_score, None)):
 
     if scan_depth == 0 or game_state.is_done:
         return (score_state(game_state), None)
     else:
         if game_state.is_maxer:
-            max_best = (lowest, None)
+            max_best = (lowest_score, None)
 
             for action in next_actions(game_state):
                 (new_state, undo) = apply_action(game_state, action)
@@ -62,7 +61,7 @@ def alpha_beta_basic(
                     return max_best
             return max_best
         else:
-            min_best = (highest, None)
+            min_best = (highest_score, None)
 
             for action in next_actions(game_state):
                 (new_state, undo) = apply_action(game_state, action)

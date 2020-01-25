@@ -99,11 +99,14 @@ def is_attacked_by(chess_state, p_color, pos, attacker_pos, enemies_only=True, i
         diff = subtract(pos, attacker_pos)
 
         if enemies_only:
+            # Check for pawn attacks
             fwd_dir = -1 if p_color == white else 1
             return fwd_dir == -diff[0] and v2_abs(diff) == abs_unit_one
         else:
+            # Check for pawn attacks or pawn support
             return v2_abs(diff) == abs_unit_one
     elif attacker in all_pinners:
+        # Use vector math to determine if attacked by pinners
         if is_in_ray[attacker]([pos, attacker_pos]):
             for i_pos in v2_range(pos, attacker_pos):
                 if i_pos in ignored:
@@ -161,8 +164,9 @@ def targeted_by(chess_state, p_color, pos):
         fwd_dir = 1
     enemy_targeters = []
     friendly_targeters = []
+
     # Preserve order of piece assessment so that attacker lists are sorted from least material to greatest
-    # this avoids the need to sort the lists when used for trade off scoring
+    # this avoids the need to sort the lists when used for trade-off scoring
 
     for piece in not_pawns:
         for attack_pos in chess_state.positions[piece]:
@@ -208,8 +212,6 @@ def get_moves(chess_state):
 
         for from_ in chess_state.positions[piece]:
             (i, j) = from_
-
-            assert chess_state.board[i][j] == piece
 
             if piece in pawns:
                 forward = -1 if chess_state.active_color == white else 1

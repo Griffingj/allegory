@@ -28,11 +28,17 @@ class ChessAgent():
     def search(self):
         search_basis = deepcopy(self.game)
         self.chess_search.stop(False)
+        positions_lookup = dict()
+        move_lookup = {
+            "pruners": set(),
+            "critical_path": set()
+        }
 
-        (score, best_path) = self.chess_search.alpha_beta(
+        (score, best_path) = self.chess_search.iterative_deepening(
             search_basis,
             self.search_depth,
-            None,
+            positions_lookup,
+            move_lookup,
             self.diag
         )
 

@@ -2,7 +2,7 @@ from itertools import chain
 import functools
 import math
 
-highest = 2 ** 16 - 1
+highest = float('inf')
 lowest = -highest
 
 
@@ -80,34 +80,40 @@ class DllNode():
 
 
 class DoublyList():
-    def __init__(self):
-        self.l_head = None
-        self.r_head = None
-
-    def append(self, key, val):
-        if self.l_head is None:
-            self.r_head = self.l_head = DllNode(None, None, key, val)
-        else:
-            self.r_head = self.r_head.right = DllNode(self.r_head, None, key, val)
-        return self.r_head
+    def __init__(self, l_head=None, r_head=None, length=0):
+        self.l_head = l_head
+        self.r_head = r_head
+        self.length = length
 
     def append_node(self, node):
         if self.l_head is None:
             self.r_head = self.l_head = node
         else:
+            node.left = self.r_head
             self.r_head = self.r_head.right = node
-        return self.r_head
+        self.length += 1
+        return node
+
+    def append(self, key, val):
+        return self.append_node(DllNode(None, None, key, val))
 
     def pop(self):
         if self.r_head is not None:
             node = self.r_head
-            self.r_head = self.r_head.left
+            if self.length == 1:
+                self.l_head = self.r_head = None
+            else:
+                self.r_head = self.r_head.left
+            node.right = node.left = None
+            self.length -= 1
             return node
-        return None
 
     def del_node(self, node):
         if node == self.l_head:
             self.l_head = node.right
+
+        if node.right is not None:
+            node.right.left = node.left
 
         if node == self.r_head:
             self.r_head = node.left
@@ -115,32 +121,39 @@ class DoublyList():
         if node.left is not None:
             node.left.right = node.right
 
-        if node.right is not None:
-            node.right.left = node.left
-
         node.right = node.left = None
+        self.length -= 1
         return node
 
     def popleft(self):
-        if self.l_head is not None:
+        if self.r_head is not None:
             node = self.l_head
-            self.l_head = self.l_head.right
+            if self.length == 1:
+                self.r_head = self.l_head = None
+            else:
+                self.l_head = self.l_head.right
+            node.right = node.left = None
+            self.length -= 1
             return node
-        return None
+
+    def prepend_node(self, node):
+        if self.l_head is None:
+            self.r_head = self.l_head = node
+        else:
+            node.right = self.l_head
+            self.l_head = self.l_head.left = node
+        self.length += 1
+        return node
 
     def prepend(self, key, val):
-        if self.l_head is None:
-            self.r_head = self.l_head = DllNode(None, None, key, val)
-        else:
-            self.l_head = self.l_head.left = DllNode(None, self.l_head, key, val)
-        return self.l_head
+        return self.append_node(DllNode(None, None, key, val))
 
 
 NO_VAL = object()
 
 
 class LruMap():
-    def __init__(self, maxlen):
+    def __init__(self, maxlen=highest):
         self.map = dict()
         self.dll = DoublyList()
         self.maxlen = maxlen
@@ -156,7 +169,7 @@ class LruMap():
             self.length += 1
 
             if self.length > self.maxlen:
-                self.maxlen -= 1
+                self.length -= 1
                 removed = self.dll.popleft()
                 self.map.pop(removed.key)
 

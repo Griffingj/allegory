@@ -3,9 +3,9 @@ from collections import namedtuple
 
 from src.python.chess.chess_consts import b_range, white, black, castling_rooks, material, pieces,\
     initial_fen, kings, pawns, castling, initial_positions, rooks, all_pieces, associations,\
-    color_o
+    color_o, affinity
 
-from src.python.primitive import intersect_str, subtract_str
+from src.python.primitive import intersect_str, subtract_str, sign
 
 from src.python.chess.chess_interop import coords_to_chess, chess_to_coords
 
@@ -62,7 +62,10 @@ class ChessState():
         self.material_balance = material_balance
         self.total_material = total_material
 
-    def to_fen(self):
+    def is_losing(self, p_color):
+        return abs(self.material_balance) > material["N"] and affinity[p_color] != sign(self.material_balance)
+
+    def to_fen_base(self):
         # A FEN "record" defines a particular game position, all in one text line and using only the ASCII character
         # set.
         files = []
@@ -89,10 +92,11 @@ class ChessState():
             "/".join(files),
             self.active_color,
             self.castling_available if self.castling_available is not None else "-",
-            coords_to_chess(self.en_passant_target) if self.en_passant_target is not None else "-",
-            str(self.halfmoves),
-            str(self.move)
+            coords_to_chess(self.en_passant_target) if self.en_passant_target is not None else "-"
         ])
+
+    def to_fen(self):
+        return self.to_fen_base() + " " + str(self.halfmoves) + " " + str(self.move)
 
     def player_affinity(self):
         return 1 if self.active_color == white else -1
@@ -272,6 +276,10 @@ class ChessState():
             rank += "]\n"
             board_str += rank
         return board_str
+
+    def hash(self):
+        return self.to_fen_base()
+        # return tuple((k, tuple(v)) for k, v in self.positions.items())
 
 
 def normalize_fen(fenish):

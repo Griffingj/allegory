@@ -1,8 +1,8 @@
 from src.python.chess.chess_movement import Move
 from src.python.chess.chess_consts import material
 from src.python.chess.chess_state import fen_to_state
-from src.python.chess.chess_strategy import score_end, score_state, horizon_outcome
-from src.python.primitive import lowest, highest
+from src.python.chess.chess_strategy import score_end, score_state, horizon_outcome,\
+    lowest_score, highest_score, losing_side_tradeoff_penalty
 
 
 def test_score_end_check_mate_white():
@@ -14,8 +14,8 @@ def test_score_end_check_mate_white():
     )
     s1.apply(m)
     assert s1.is_done
-    assert score_end(s1) == highest - 1
-    assert score_state(s1, m) == highest - 1
+    assert score_end(s1) == highest_score - 1
+    assert score_state(s1, m) == highest_score - 1
 
 
 def test_score_end_check_mate_black():
@@ -27,8 +27,8 @@ def test_score_end_check_mate_black():
     )
     s1.apply(m)
     assert s1.is_done
-    assert score_end(s1) == lowest + 1
-    assert score_state(s1, m) == lowest + 1
+    assert score_end(s1) == lowest_score + 1
+    assert score_state(s1, m) == lowest_score + 1
 
 
 # This doesn't work because of lack of king safety checks for performance
@@ -56,7 +56,7 @@ def test_horizon_outcome():
     # King can't help
     s1 = fen_to_state("3r2k1/q7/8/8/1Q6/2K5/8/8 w - - 0 50")
     s1.apply(m)
-    assert horizon_outcome(s1, "w", "Q", m.to_) == -material["Q"]
+    assert horizon_outcome(s1, "w", "Q", m.to_) == -material["Q"]  # - losing_side_tradeoff_penalty
 
     # Bad trade early out
     s1 = fen_to_state("3r2k1/q7/8/8/1Q6/2K5/4N3/8 w - - 0 50")
