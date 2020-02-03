@@ -1,3 +1,5 @@
+Rust Full Rewrite
+
 Evaluation Improvements
     Midgame, Early Game
         Mobility
@@ -6,10 +8,6 @@ Evaluation Improvements
 Incremental Move Gen
 
 Zobrist hashing for incremental hash updates
-
-Rust Full Rewrite
-
-
 
 Self tuned evaluation coefficients, or trained neural net for evaluation and move ordering
     - Reinforcement Learning?
