@@ -52,7 +52,6 @@ fn handle_connection(mut stream: TcpStream) {
             if path_tokens.len() == 4 {
                 vec.push(path_tokens[3]);
             }
-            let last_token = if  path_tokens.len() == 4 { path_tokens[3] } else { "" };
             (HttpStatus::Ok, vec.join(PATH_SEP))
         }
     };
