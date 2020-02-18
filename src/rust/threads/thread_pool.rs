@@ -3,9 +3,14 @@ use std::thread;
 
 type Job = Box<dyn FnOnce() + Send + 'static>;
 
+enum Message {
+    NewJob(Job),
+    Terminate,
+}
+
 pub struct ThreadPool {
     workers: Vec<Worker>,
-    sender: mpsc::Sender<Job>,
+    sender: mpsc::Sender<Message>,
 }
 
 impl ThreadPool {
@@ -38,31 +43,76 @@ impl ThreadPool {
             F: FnOnce() + Send + 'static {
 
         let job = Box::new(f);
-        self.sender.send(job).unwrap();
+        self.sender.send(Message::NewJob(job)).unwrap();
     }
 }
 
+impl Drop for ThreadPool {
+    fn drop(&mut self) {
+        println!("Sending terminate message to all workers.");
+        // Attention
+
+        // "To better understand why we need two separate loops, imagine a scenario with two
+        // workers. If we used a single loop to iterate through each worker, on the first
+        // iteration a terminate message would be sent down the channel and join called on
+        // the first worker’s thread. If that first worker was busy processing a request at
+        // that moment, the second worker would pick up the terminate message from the
+        // channel and shut down. We would be left waiting on the first worker to shut down,
+        // but it never would because the second thread picked up the terminate message.
+        // Deadlock!
+
+        // To prevent this scenario, we first put all of our Terminate messages on the
+        // channel in one loop; then we join on all the threads in another loop. Each worker
+        // will stop receiving requests on the channel once it gets a terminate message. So,
+        // we can be sure that if we send the same number of terminate messages as there are
+        // workers, each worker will receive a terminate message
+
+        for _ in &mut self.workers {
+            self.sender.send(Message::Terminate).unwrap();
+        }
+
+        for worker in &mut self.workers {
+            println!("Shutting down worker {}", worker.id);
+
+            if let Some(thread) = worker.thread.take() {
+                thread.join().unwrap();
+            }
+        }
+    }
+}
+
+
 struct Worker {
     id: usize,
-    thread: thread::JoinHandle<()>,
+    thread: Option<thread::JoinHandle<()>>,
 }
 
 impl Worker {
-    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
+    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Message>>>) -> Worker {
         let thread = thread::spawn(move || {
             loop {
-                let job = receiver.lock()
+                let message = receiver
+                    .lock()
                     .expect("Lock in poisoned state, prior acquirer panicked")
-                    .recv().unwrap();
+                    .recv()
+                    .unwrap();
 
-                println!("Worker {} got a job; executing.", id);
-                job();
+                match message {
+                    Message::NewJob(job) => {
+//                        println!("Worker {} got a job; executing.", id);
+                        job();
+                    },
+                    Message::Terminate => {
+//                        println!("Worker {} was told to terminate.", id);
+                        break;
+                    },
+                }
             }
         });
 
         Worker {
             id,
-            thread,
+            thread: Some(thread),
         }
     }
 }
