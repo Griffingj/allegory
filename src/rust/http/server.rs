@@ -7,7 +7,7 @@ use rust::threads::thread_pool::ThreadPool;
 
 const PORT_SEP: &str = ":";
 const HTTP_1_1: &str = "HTTP/1.1";
-const HTTP_LINE_BREAK: &str = "\r\n\r\n";
+const HTTP_BODY_DELIM: &str = "\r\n\r\n";
 const CARRIAGE_RETURN: u8 = 13;
 const LINE_FEED: u8 = 10;
 
@@ -55,6 +55,54 @@ pub enum HttpStatusCode {
     ServiceUnavailable          = 503,
     GatewayTimeout              = 504,
     HttpVersionNotSupported     = 505
+}
+
+impl HttpStatusCode {
+    pub fn to_str(c: HttpStatusCode) -> &'static str {
+        match c {
+            HttpStatusCode::Continue                    => "100",
+            HttpStatusCode::SwitchingProtocols          => "101",
+            HttpStatusCode::Ok                          => "200",
+            HttpStatusCode::Created                     => "201",
+            HttpStatusCode::Accepted                    => "202",
+            HttpStatusCode::NonAuthoritativeInformation => "203",
+            HttpStatusCode::NoContent                   => "204",
+            HttpStatusCode::ResetContent                => "205",
+            HttpStatusCode::PartialContent              => "206",
+            HttpStatusCode::MultipleChoices             => "300",
+            HttpStatusCode::MovedPermanently            => "301",
+            HttpStatusCode::Found                       => "302",
+            HttpStatusCode::SeeOther                    => "303",
+            HttpStatusCode::NotModified                 => "304",
+            HttpStatusCode::UseProxy                    => "305",
+            HttpStatusCode::TemporaryRedirect           => "307",
+            HttpStatusCode::BadRequest                  => "400",
+            HttpStatusCode::Unauthorized                => "401",
+            HttpStatusCode::PaymentRequired             => "402",
+            HttpStatusCode::Forbidden                   => "403",
+            HttpStatusCode::NotFound                    => "404",
+            HttpStatusCode::MethodNotAllowed            => "405",
+            HttpStatusCode::NotAcceptable               => "406",
+            HttpStatusCode::ProxyAuthenticationRequired => "407",
+            HttpStatusCode::RequestTimeout              => "408",
+            HttpStatusCode::Conflict                    => "409",
+            HttpStatusCode::Gone                        => "410",
+            HttpStatusCode::LengthRequired              => "411",
+            HttpStatusCode::PreconditionFailed          => "412",
+            HttpStatusCode::PayloadTooLarge             => "413",
+            HttpStatusCode::UriTooLong                  => "414",
+            HttpStatusCode::UnsupportedMediaType        => "415",
+            HttpStatusCode::RangeNotSatisfiable         => "416",
+            HttpStatusCode::ExpectationFailed           => "417",
+            HttpStatusCode::UpgradeRequired             => "426",
+            HttpStatusCode::InternalServerError         => "500",
+            HttpStatusCode::NotImplemented              => "501",
+            HttpStatusCode::BadGateway                  => "502",
+            HttpStatusCode::ServiceUnavailable          => "503",
+            HttpStatusCode::GatewayTimeout              => "504",
+            HttpStatusCode::HttpVersionNotSupported     => "505"
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -155,13 +203,6 @@ pub enum StandardHttpHeaders {
 }
 
 impl StandardHttpHeaders {
-    pub fn from_str(header: &str) -> Option<StandardHttpHeaders> {
-        match header {
-            "Content-Length" => Some(StandardHttpHeaders::ContentLength),
-            _ => None
-        }
-    }
-
     pub fn to_str(header: &StandardHttpHeaders) -> &'static str {
         match header {
             StandardHttpHeaders::ContentLength => "Content-Length"
@@ -233,8 +274,7 @@ pub struct HttpResponse {
 
 enum ReadMode {
     RequestLine,
-    Headers,
-    Body
+    Headers
 }
 
 fn read_request(mut stream: TcpStream) -> (TcpStream, HttpRequest) {
@@ -267,8 +307,6 @@ fn read_request(mut stream: TcpStream) -> (TcpStream, HttpRequest) {
         if last_four[1] == CARRIAGE_RETURN && last_four[0] == LINE_FEED {
             // Two crlfs in a row means start of body
             if last_four[3] == CARRIAGE_RETURN && last_four[2] == LINE_FEED {
-                read_mode = ReadMode::Body;
-
                 let is_get = match &verb_opt {
                     Some(v) => v == HttpVerb::to_str(&HttpVerb::GET),
                     None => false,
@@ -314,11 +352,11 @@ fn read_request(mut stream: TcpStream) -> (TcpStream, HttpRequest) {
 
 fn response_to_string(http_response: HttpResponse) -> String {
     let status_line = format!(
-        "{} {:?} {}{}",
+        "{} {} {}{}",
         HTTP_1_1,
-        http_response.status.code,
+        HttpStatusCode::to_str(http_response.status.code),
         http_response.status.reason,
-        HTTP_LINE_BREAK
+        HTTP_BODY_DELIM
     );
 
     format!(
@@ -336,7 +374,6 @@ fn handle_connection(stream: TcpStream, router: &'static Router) {
     stream.write(response_to_string(response).as_bytes()).unwrap();
     stream.flush().unwrap();
 }
-
 
 type Router = fn(HttpRequest) -> HttpResponse;
 
